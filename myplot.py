@@ -1,8 +1,13 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
-def myplot(array,shape = (1,1)):
+def myplot(values = None,indices = None,shape = (1,1)):
     f,ax = plt.subplots(shape[0],shape[1],figsize = (10,4))
-    ax.plot(array)
-    ax.set_xlim(xmax = len(array))
+    if values is None:
+        return f,ax
+    if indices is None:
+        indices = np.arange(len(values))
+    ax.plot(indices,values)
+    ax.set_xlim(xmax = max(indices)) 
     f.tight_layout()
     return f,ax
