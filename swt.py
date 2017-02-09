@@ -1,4 +1,4 @@
-# wavelet analysis of eigenvector
+# maximum overlap wavelet transform  of a signal 
 import matplotlib.pyplot as plt
 import numpy as np
 import pywt
@@ -7,24 +7,21 @@ class swt(object):
 
     def __init__(self,ev,level = "max",wavelet = "sym4",plot = True,rec = True):
         
-        
-        self.smooth = np.zeros_like(ev)
-       
-        
-     
+               
         if level == "max":
             self.slices = self.split_idx(ev)
             self.nlevels = pywt.swt_max_level(len(ev[self.slices[0]]))
             level = self.nlevels-1
-            self.details = np.zeros((level,ev.shape[0]))
+
 
         else:
             self.slices = self.split_idx(ev)
             self.nlevels = pywt.swt_max_level(len(ev[self.slices[0]]))
             #level = self.nlevels-1
-            self.details = np.zeros((level,ev.shape[0]))
 
-        print "Number of levels:%d"%self.nlevels
+
+        self.smooth = np.zeros_like(ev)
+        self.details = np.zeros((level,ev.shape[0]))
 
         for s in self.slices[:3]:
 
@@ -115,7 +112,7 @@ class swt(object):
             if rec:
                 details[-l,:] = np.array(pywt.iswt(coefs2,wavelet))
             else:
-                details[-l,:] = coefs2[nlevels-l][1]
+                details[-l,:] = np.array(coefs2[nlevels-l][1])
 
 
         return smooth,details
