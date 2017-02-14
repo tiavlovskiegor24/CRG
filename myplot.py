@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def myplot(values = None,indices = None,style = "_",shape = (1,1)):
+def myplot(values = None,indices = None,style = "b",shape = (1,1)):
     f,ax = plt.subplots(shape[0],shape[1],figsize = (10,4))
     if values is None:
         return f,ax

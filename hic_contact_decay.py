@@ -3,9 +3,67 @@ import matplotlib.pyplot as plt
 from myplot import myplot
 
 def gen_dec_feature_vec(M,dbins_max = 100):
+    '''
+    
+    '''
+    
     n = M.shape[0]
     dec_vec = np.zeros(n)
-    for loc,data in enumerate(M):
+    dbins = np.arange(1,dbins_max+1)
+    
+    data = M[0].toarray().ravel()[1:dbins_max+1]
+    data = (data+1)*1./(data+1).sum()# probability distribution using\
+    dec_vec[0] = compute_decay(data,dbins,plot = True)[0]
+
+    if n < 2:
+        return dec_vec
+    
+    data = M[n-1].toarray().ravel()[::-1][1:dbins_max+1]
+    data = (data+1)*1./(data+1).sum()# probability distribution using\
+    dec_vec[n-1] = compute_decay(data,dbins,plot = True)[0]
+    
+    
+    for loc in xrange(1,n/2):
+        #print "First",loc
+        data = M[loc].toarray().ravel()
+        data[loc+1:2*loc+1] = np.maximum(data[:loc][::-1],\
+                                         data[loc+1:2*loc+1])
+        data = data[loc+1:]
+
+        data = (data+1)*1./(data+1).sum()# probability distribution using\
+               #Laplace rule
+        #data = np.cumsum(data[::-1])[::-1]#cum pd from the tail
+
+        data = data[:dbins_max]
+
+        if loc % 800 == 0:
+            dec_vec[loc] = compute_decay(data,dbins,plot=True)[0]
+        else:
+            dec_vec[loc] = compute_decay(data,dbins)[0]
+            
+    for loc in xrange(n/2,n-1):
+        #print "Second",loc
+        data = M[loc].toarray().ravel()
+        data[loc-(n-loc-1):loc] = np.maximum(data[loc-(n-loc-1):loc],\
+                                             data[loc+1:][::-1])
+
+        data = data[:loc][::-1]
+
+        data = (data+1)*1./(data+1).sum()# probability distribution using\
+               #Laplace rule
+        #data = np.cumsum(data[::-1])[::-1]#cum pd from the tail
+
+        data = data[:dbins_max]
+
+        if loc % 800 == 0:
+            dec_vec[loc] = compute_decay(data,dbins,plot=True)[0]
+        else:
+            dec_vec[loc] = compute_decay(data,dbins)[0]
+        
+        
+ 
+    '''
+    For loc,data in enumerate(M):
         dbins = np.arange(n)- loc
         data = data.toarray().ravel()
         if loc > 0:
@@ -21,11 +79,12 @@ def gen_dec_feature_vec(M,dbins_max = 100):
 
         data = data*1./data.sum()# probability distribution
         #data = np.cumsum(pdata[::-1])[::-1]#cum pd from the tail
+
         data = data[:dbins_max]
         dbins = dbins[:dbins_max]
         
         dec_vec[loc] = compute_decay(data,dbins)[0]
-        
+    '''    
     return dec_vec
     
 
