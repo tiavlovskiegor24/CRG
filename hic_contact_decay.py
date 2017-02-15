@@ -1,8 +1,32 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from myplot import myplot
+import cooler
+from scipy import sparse
 
-def 
+def Contact_Decay_Feature(filename):
+    # choose resolution file and chromosome
+    filepath = "./matrices/Jurkat/C025_C029II_Jurkat_WT_Q20_50kb.cool"
+    with open(filename,"wb") as f:
+        c = cooler.Cooler(filepath)
+        for chrom in c.chromnames:
+            cis = sparse.csr_matrix(c.matrix(balance = False)\
+                                    .fetch(chrom)).astype(np.float)
+            n = cis.shape[0]
+            try:
+                dec_vec = gen_dec_feature_vec(cis)
+            except:
+                continue
+            dec_vec = ["%.3f"%(i) for i in dec_vec]
+            out = np.c_[np.array([chrom for i in xrange(n)],dtype = np.str),\
+                  np.arange(n)*50000,\
+                  np.arange(1,n+1)*50000,\
+                  dec_vec]
+            out = out.astype(np.str)
+
+            np.savetxt(f,out,fmt = "%s",delimiter = "\t")
+            print "%s finished"%chrom
+            
 
 def process_data(data):
     data = (data+1)*1./(data+1).sum()# probability distribution using\
@@ -22,14 +46,14 @@ def gen_dec_feature_vec(M,dbins_max = 100):
     # first row
     data = M[0].toarray().ravel()[1:dbins_max+1]
     data = process_data(data)
-    dec_vec[0] = compute_decay(data,dbins,plot = True)[0]
-    plt.title("bin %d, decay rate = %.2f"%(0,dec_vec[0]))
+    dec_vec[0] = compute_decay(data,dbins,plot = False)[0]
+    #plt.title("bin %d, decay rate = %.2f"%(0,dec_vec[0]))
 
     # last row
     data = M[n-1].toarray().ravel()[::-1][1:dbins_max+1]
     data = process_data(data)   
-    dec_vec[n-1] = compute_decay(data,dbins,plot = True)[0]
-    plt.title("bin %d, decay rate = %.2f"%(n-1,dec_vec[n-1]))
+    dec_vec[n-1] = compute_decay(data,dbins,plot = False)[0]
+    #plt.title("bin %d, decay rate = %.2f"%(n-1,dec_vec[n-1]))
 
     if n % 2 != 0:
         #middle row of odd number of rows
@@ -38,7 +62,7 @@ def gen_dec_feature_vec(M,dbins_max = 100):
         dec_vec[n/2-1] = compute_decay(data,dbins,plot = False)[0]
     
 
-    sample = np.sort(np.random.randint(1,n,5)).tolist()[::-1]
+    sample = np.sort(np.random.randint(1,n,1)).tolist()[::-1]
 
     for loc in xrange(1,n/2):
         for select in [loc,-loc-1]:
