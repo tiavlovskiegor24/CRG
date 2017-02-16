@@ -4,12 +4,21 @@ from myplot import myplot
 import cooler
 from scipy import sparse
 
-def Contact_Decay_Feature(filename):
+def Contact_Decay_Feature(filename,chrom = None):
     # choose resolution file and chromosome
     filepath = "./matrices/Jurkat/C025_C029II_Jurkat_WT_Q20_50kb.cool"
+    res = 50000
     with open(filename,"wb") as f:
         c = cooler.Cooler(filepath)
-        for chrom in c.chromnames:
+
+        if chrom is None:
+            chroms = c.chromnames
+        else:
+            chroms = [chrom]
+
+        for chrom in chroms:
+            print "Processing %s"%chrom
+
             cis = sparse.csr_matrix(c.matrix(balance = False)\
                                     .fetch(chrom)).astype(np.float)
             n = cis.shape[0]
@@ -17,16 +26,22 @@ def Contact_Decay_Feature(filename):
                 dec_vec = gen_dec_feature_vec(cis)
             except:
                 continue
-            dec_vec = ["%.3f"%(i) for i in dec_vec]
+
+            myplot(dec_vec)
+            plt.title(chrom)
+            plt.show()
+            
+            dec_vec = ["%.4f"%(i) for i in dec_vec]
             out = np.c_[np.array([chrom for i in xrange(n)],dtype = np.str),\
-                  np.arange(n)*50000,\
-                  np.arange(1,n+1)*50000,\
+                  np.arange(n)*res,\
+                  np.arange(1,n+1)*res,\
                   dec_vec]
             out = out.astype(np.str)
 
             np.savetxt(f,out,fmt = "%s",delimiter = "\t")
             print "%s finished"%chrom
-            
+
+        print "Everything is finished" 
 
 def process_data(data):
     data = (data+1)*1./(data+1).sum()# probability distribution using\
@@ -62,7 +77,8 @@ def gen_dec_feature_vec(M,dbins_max = 100):
         dec_vec[n/2-1] = compute_decay(data,dbins,plot = False)[0]
     
 
-    sample = np.sort(np.random.randint(1,n,1)).tolist()[::-1]
+    #sample = np.sort(np.random.randint(1,n,1)).tolist()[::-1]
+    sample = []
 
     for loc in xrange(1,n/2):
         for select in [loc,-loc-1]:
@@ -78,8 +94,8 @@ def gen_dec_feature_vec(M,dbins_max = 100):
             data = data[:dbins_max]
 
             if select in sample or n+select in sample:
-                 dec_vec[select] = compute_decay(data,dbins,plot=True)[0]
-                 plt.title("bin %d, decay rate = %.2f"%(select,dec_vec[select]))
+                 dec_vec[select] = compute_decay(data,dbins,plot=False)[0]
+                 #plt.title("bin %d, decay rate = %.2f"%(select,dec_vec[select]))
                  sample.pop()
             else:
                 dec_vec[select] = compute_decay(data,dbins)[0]
@@ -109,4 +125,4 @@ def compute_decay(contacts,dbins = None,plot=False):
 
     return fit
     
-    
+

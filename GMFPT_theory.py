@@ -1,4 +1,101 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from myplot import myplot
+import cooler
+from scipy import sparse
+from scipy.linalg import eigh
+from hi_c_cooler import hi_c_cooler
+from sparsify import sparsify
+from time import time
+from myplot import myplot
+
+
+def Compute_GMFPT_Feature(filename,chrom = None):
+        # choose resolution file and chromosome
+    filepath = "./matrices/Jurkat/C025_C029II_Jurkat_WT_Q20_50kb.cool"
+    res = 50000
+    with open(filename,"wb") as f:
+
+        c = cooler.Cooler(filepath)
+
+        if chrom is None:
+            chroms = c.chromnames
+        else:
+            chroms = [chrom]
+
+        for chrom in chroms:
+            print "Processing %s"%chrom
+
+            cis,bins = hi_c_cooler(filepath,chrom,res = 50000)
+            n = cis.shape[0]
+            if n < 2:
+                continue
+
+            # Adjacency matrix
+            A = cis - sparse.diags(cis.diagonal())
+            del cis
+
+            # remove 1 read entries
+            A = sparsify(A,2)
+
+            #remove non-reachable regions
+            D = np.asarray((A>0).sum(axis=1)).ravel()
+            select = np.where(D>0)[0]
+            A = A[select,:][:,select]
+            bins = bins[select]
+            #del select
+
+            # Construct
+            # Degree vector
+            D = np.asarray(A.sum(axis=1)).ravel()
+
+            # Laplacian matrix
+            L = sparse.diags(D) - A
+            del A
+
+            # normalise Laplacian
+            #L = np.dot(np.dot(sparse.diags(D**(-1),0),L),sparse.diags(D**(-1),0))
+
+            print "Computing Eigenvectors of Laplacian"
+            t1 = time()
+            evals, evecs = eigh(L.toarray())
+            print "Time taken: %.3f"%(time()-t1)
+            del L
+
+            print "Computing GMFPT"
+            g = GMFPT_theory(D,evals,evecs,weighted=False)
+            del evals,evecs,D
+
+            #g_bins = g_bins[np.where(g<=thresh)]
+            #g = g[np.where(g<=thresh)]
+
+            # Nan the non-reachable regions
+            thresh = np.percentile(g,95)
+            #g[np.where(g<=thresh)] = np.nan
+            bins = bins[np.where(g<=thresh)]
+            g = g[np.where(g<=thresh)]
+
+            myplot(g,bins)
+            plt.title(chrom)
+            plt.show()
+            
+            g_out = np.array(["%.4f"%(np.nan) for i in xrange(n)],dtype = "S21")
+
+            for bin,value in zip(bins,g):
+                g_out[bin] = "%d"%(value)
+            del g    
+            out = np.c_[[chrom for i in xrange(n)],\
+                  np.arange(n)*res,\
+                  np.arange(1,n+1)*res,\
+                        g_out]
+            out = out.astype(np.str)
+
+            np.savetxt(f,out,fmt = "%s",delimiter = "\t")
+            print "%s finished"%chrom
+
+        print "Everything is finished" 
+        
+
 
 def GMFPT_theory(d,l,v,weighted=True,select = "all") :
     """
