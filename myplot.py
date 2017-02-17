@@ -8,6 +8,6 @@ def myplot(values = None,indices = None,style = "b",shape = (1,1)):
     if indices is None:
         indices = np.arange(len(values))
     ax.plot(indices,values,style)
-    ax.set_xlim(xmax = max(indices)) 
+    ax.set_xlim(xmax = max(indices),xmin = min(indices)) 
     f.tight_layout()
     return f,ax

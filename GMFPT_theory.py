@@ -10,11 +10,14 @@ from time import time
 from myplot import myplot
 
 
-def Compute_GMFPT_Feature(filename,chrom = None):
+def Compute_GMFPT_Feature(newfilename,filepath,res = None, chrom = None):
         # choose resolution file and chromosome
-    filepath = "./matrices/Jurkat/C025_C029II_Jurkat_WT_Q20_50kb.cool"
-    res = 50000
-    with open(filename,"wb") as f:
+    #filepath = "./matrices/Jurkat/C025_C029II_Jurkat_WT_Q20_50kb.cool"
+    if res is None:
+        print "Enter resolution"
+        return
+
+    with open(newfilename,"wb") as f:
 
         c = cooler.Cooler(filepath)
 
@@ -26,7 +29,7 @@ def Compute_GMFPT_Feature(filename,chrom = None):
         for chrom in chroms:
             print "Processing %s"%chrom
 
-            cis,bins = hi_c_cooler(filepath,chrom,res = 50000)
+            cis,bins = hi_c_cooler(filepath,chrom,res = res)
             n = cis.shape[0]
             if n < 2:
                 continue
