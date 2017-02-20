@@ -1,9 +1,17 @@
 import numpy as np
 import pandas as pd
 
-def drop_features(df_modified):
-    columns_to_drop = ['brcd', 'chrom', 'gene_name',"rep",\
-                       "cat","RNA/DNA","pos_expr","RNA","strand",\
+def table_processing(filename):
+    features = load_feature_names("Features.txt")
+    df = pd.read_table("Jurkat_BHIVE_mini_expr.txt",comment = "#")
+    cat_features = ["cat","strand",]
+    df,barcodes = encode_one_hot(df,cat_features)
+    
+    
+def drop_features(df_modified,columns_to_drop=None):
+    if columns_to_drop is None:
+        columns_to_drop = ['brcd','pos', 'chrom', 'gene_name',"rep",\
+                       "RNA/DNA","pos_expr","RNA",\
                        "expr","nread","mapq","DNA"]
     
     df_dropped = df_modified[columns_to_drop]
@@ -11,6 +19,7 @@ def drop_features(df_modified):
     print df_dropped.head()
     del df_dropped
 
+    
 def encode_target_values(df_modified):
     df_modified["RNA/DNA"] = df_modified["RNA"]*1.0/df_modified["DNA"]
     df_modified["pos_expr"] = np.where(df_modified["RNA/DNA"] > 3,1.,0.)
@@ -32,9 +41,22 @@ def load_feature_names(filename):
             features[feature] = line[1]
     return features
 
-def encode_one_hot(df):
-    barcodes = df.brcd.tolist()
 
+def encode_one_hot(df,cat_features = None):
+    if cat_features is None:
+        return df
+    
+    for feature in cat_features:
+        f_values = np.unique(df[feature]) 
+        print 'There are ' + str(f_values.shape[0]) \
+                +' unique values for "%s" feature.\n'%feature
+        print f_values 
+        dummies = pd.get_dummies(df[feature],prefix = feature,drop_first = True)
+
+        df = pd.concat([df,dummies],axis = 1)
+        df.drop(feature,inplace = True,axis = 1)
+
+    '''
     # category of the intergration site
     feature = "cat"
     print 'There are ' + str(np.unique(df[feature]).shape[0]) \
@@ -61,13 +83,14 @@ def encode_one_hot(df):
     # integration site in gene
     df_modified["in_gene"] = np.where(pd.isnull(df_modified["gene_name"])\
                                       ,0.,1.)
+    '''
+    return df
 
-    return df_modified,barcodes
 
 def create_matrix(df_modified):
     print "Max value in the data", df_modified.values.ravel().max()
     df_modified.replace(np.nan,1e9,inplace = True)
-    feature_names = df_modified.columns.tolist()
+    col_names = df_modified.columns.tolist()
     X = df_modified.as_matrix().astype(np.float)
-    return X,feature_names
+    return X,col_names
 
