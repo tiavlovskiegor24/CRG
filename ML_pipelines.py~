@@ -1,0 +1,15 @@
+from sklearn.model_selection import StratifiedShuffleSplit,StratifiedKFold
+from sklearn.model_selection import cross_val_score
+from sklearn.ensemble import RandomForestClassifier,AdaBoostClassifier
+from sklearn.tree import DecisionTreeRegressor,DecisionTreeClassifier
+from sklearn.preprocessing import StandardScaler,MinMaxScaler,minmax_scale
+from sklearn.linear_model import LogisticRegression
+from sklearn import svm
+from sklearn.model_selection import GridSearchCV
+from sklearn import metrics
+from sklearn.pipeline import make_pipeline
+from time import time
+from sklearn.decomposition import PCA, KernelPCA
+
+
+

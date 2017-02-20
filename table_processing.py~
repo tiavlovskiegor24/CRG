@@ -1,0 +1,28 @@
+def encode_one_hot(df):
+    barcodes = df.brcd.tolist()
+
+    feature = "cat"
+    print 'There are ' + str(np.unique(df[feature]).shape[0]) \
+        +' unique values for "%s" feature.\n'%feature
+    print np.unique(df[feature])
+    dummies = pd.get_dummies(df[feature])
+
+    #print "Unique",dummies.sum(axis = 1).unique()
+    dummies.drop("IN",inplace = True,axis = 1)
+    df_modified = pd.concat([df,dummies],axis = 1)
+
+    feature = "strand"
+    print 'There are ' + str(np.unique(df[feature]).shape[0]) \
+        +' unique values for "%s" feature.\n'%feature
+    print np.unique(df[feature])
+    dummies = pd.get_dummies(df[feature])
+
+    #print "Unique",dummies.sum(axis = 1).unique()
+    dummies.drop("-",inplace = True,axis = 1)
+    dummies.columns = ["Stand +"]
+    df_modified = pd.concat([df_modified,dummies],axis = 1)
+
+
+    df_modified["in_gene"] = np.where(pd.isnull(df_modified["gene_name"]),0.,1.)
+
+    return df_modified,barcodes
