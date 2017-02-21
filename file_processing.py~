@@ -1,0 +1,12 @@
+import numpy as np
+import pandas as pd
+
+def read_feature_file(filename):
+    np.loadtxt(filename, dtype={'names': ('chrom', 'bin_start', 'bin_end','value'),
+                     'formats': ('S', 'i', 'i','f')})
+
+def write_feature_file(filename):
+    
+    
+    
+    

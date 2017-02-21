@@ -1,13 +1,61 @@
 import numpy as np
 import pandas as pd
+import file_processing
 
 def table_processing(filename):
+    #load feature descriptions
     features = load_feature_names("Features.txt")
+
+    #read the dataframe from file
     df = pd.read_table("Jurkat_BHIVE_mini_expr.txt",comment = "#")
+
+    #import additional features from files
+    resolution = "50kb"# select from "10kb","50kb","100kb" and "500kb"
+    directory = "/mnt/shared/data/HiC_processing/"
+    feature_filenames = {"c_decay":"contacts_decay_Jurkat_",\
+                         "gmfpt":"gmfpt_feature_Jurkat_",\
+                         "row_sum":"row_sum_Jurkat_"}
+    
+    df = import_features(df,resolution,directory,feature_filenames)
+    
+
+    #enconde categorical features using one hot encoding
     cat_features = ["cat","strand",]
     df,barcodes = encode_one_hot(df,cat_features)
-    
-    
+
+    #drop any features
+    drop_features
+
+def train_test_split(df,train_f = 0.8):
+    # split into train and test datasets with balanced number of samples for each chromosome
+    train_idx = np.array([],dtype=np.int) 
+    test_idx = np.array([],dtype=np.int)
+    for chrom in df["chrom"].unique():
+        idx = np.where(df["chrom"] == chrom)[0]
+        n = idx.shape[0]
+        s_idx = np.zeros_like(idx,dtype = bool)
+        s_idx[np.random.choice(n,int(n*train_f),replace=False)] = True
+        train_idx= np.r_[train_idx,idx[s_idx]]
+        test_idx = np.r_[test_idx,idx[~s_idx]]
+
+    return train_idx,test_idx
+
+
+def import_features(df,res = "50kb",directory = None,feature_filenames = None):
+    resolution = {'100kb': 100000, '10kb': 10000, '500kb': 50000, '50kb': 50000}
+    bins = (df["pos"]/resolution[res]).astype(np.int).values
+
+    for feature in feature_filenames:
+        print "Computing feature: %s"%feature
+        data = np.loadtxt(directory+feature_filenames[feature]+res,dtype=np.str,delimiter="\t")
+        df[feature] = df["pos"]*0
+        for chrom in df["chrom"].unique():
+            idx = np.where(df["chrom"] == chrom)[0]
+            if chrom not in np.unique(data[:,0]):
+                print "Alarm ",feature
+            df.ix[idx,feature] = data[np.where(data[:,0] == chrom)[0],3][bins[idx]].astype(np.float)
+    return df
+
 def drop_features(df_modified,columns_to_drop=None):
     if columns_to_drop is None:
         columns_to_drop = ['brcd','pos', 'chrom', 'gene_name',"rep",\
