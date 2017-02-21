@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from myplot import myplot
 import cooler
 from scipy import sparse
+import file_processing
 
 def Contact_Decay_Feature(newfilename,filepath,res = None,chrom = None):
     # choose resolution file and chromosome
@@ -42,7 +43,8 @@ def Contact_Decay_Feature(newfilename,filepath,res = None,chrom = None):
                   dec_vec]
             out = out.astype(np.str)
 
-            np.savetxt(f,out,fmt = "%s",delimiter = "\t")
+            #np.savetxt(f,out,fmt = "%s",delimiter = "\t")
+            write_feature_file(f,out,feature_fmt = "%.3f")
             print "%s finished"%chrom
 
         print "Everything is finished" 

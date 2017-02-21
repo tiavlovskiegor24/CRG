@@ -8,6 +8,7 @@ from hi_c_cooler import hi_c_cooler
 from sparsify import sparsify
 from time import time
 from myplot import myplot
+import file_processing
 
 
 def row_sum_feature(newfilename,filepath,res = None, chrom = None):
@@ -44,7 +45,8 @@ def row_sum_feature(newfilename,filepath,res = None, chrom = None):
                         row_sum]
             out = out.astype(np.str)
 
-            np.savetxt(f,out,fmt = "%s",delimiter = "\t")
+            #np.savetxt(f,out,fmt = "%s",delimiter = "\t")
+            write_feature_file(f,out,feature_fmt = "%d")
             print "%s finished"%chrom
 
         print "Everything is finished" 

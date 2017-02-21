@@ -8,11 +8,12 @@ from hi_c_cooler import hi_c_cooler
 from sparsify import sparsify
 from time import time
 from myplot import myplot
+import file_processing
 
 
 def Compute_GMFPT_Feature(newfilename,filepath,res = None, chrom = None):
-        # choose resolution file and chromosome
-    #filepath = "./matrices/Jurkat/C025_C029II_Jurkat_WT_Q20_50kb.cool"
+    
+    
     if res is None:
         print "Enter resolution"
         return
@@ -93,7 +94,8 @@ def Compute_GMFPT_Feature(newfilename,filepath,res = None, chrom = None):
                         g_out]
             out = out.astype(np.str)
 
-            np.savetxt(f,out,fmt = "%s",delimiter = "\t")
+            #np.savetxt(f,out,fmt = "%s",delimiter = "\t")
+            write_feature_file(f,out,feature_fmt = "%d")
             print "%s finished"%chrom
 
         print "Everything is finished" 
