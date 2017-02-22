@@ -1,0 +1,13 @@
+Managing my work at CRG 
+
+* BHIVE
+** Machine Learning Pipeline
+*** TODO Create SVM pipeline function 
+*** TODO 
+
+** File processing
+*** TODO Finish up feature file fill routine   
+
+* Deep Work Hours
+** 20-24.02 ||||
+** 27-03.03 
