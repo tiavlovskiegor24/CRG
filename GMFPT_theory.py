@@ -8,7 +8,7 @@ from hi_c_cooler import hi_c_cooler
 from sparsify import sparsify
 from time import time
 from myplot import myplot
-import file_processing
+from file_processing import write_feature_file
 
 
 def Compute_GMFPT_Feature(newfilename,filepath,res = None, chrom = None):
@@ -82,7 +82,14 @@ def Compute_GMFPT_Feature(newfilename,filepath,res = None, chrom = None):
             myplot(g,bins)
             plt.title(chrom)
             plt.show()
+
+            out = np.c_[[chrom for i in xrange(g.shape[0])],\
+                        bins*res,\
+                        (bins+1)*res,\
+                        g]
+
             
+            '''
             g_out = np.array(["%.4f"%(np.nan) for i in xrange(n)],dtype = "S21")
 
             for bin,value in zip(bins,g):
@@ -92,10 +99,11 @@ def Compute_GMFPT_Feature(newfilename,filepath,res = None, chrom = None):
                   np.arange(n)*res,\
                   np.arange(1,n+1)*res,\
                         g_out]
-            out = out.astype(np.str)
+            '''
+            #out = out.astype(np.str)
 
             #np.savetxt(f,out,fmt = "%s",delimiter = "\t")
-            write_feature_file(f,out,feature_fmt = "%d")
+            write_feature_file(f,out,feature_fmt = "%.f")
             print "%s finished"%chrom
 
         print "Everything is finished" 

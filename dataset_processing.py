@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
-import file_processing
+from file_processing import read_feature_file, full_array
 
-def table_processing(filename):
+def table_processing_pipeline(filename):
     #load feature descriptions
     features = load_feature_names("Features.txt")
 
@@ -41,19 +41,30 @@ def train_test_split(df,train_f = 0.8):
     return train_idx,test_idx
 
 
-def import_features(df,res = "50kb",directory = None,feature_filenames = None):
-    resolution = {'100kb': 100000, '10kb': 10000, '500kb': 50000, '50kb': 50000}
+def import_features(df,res = "",directory = None,feature_filenames = None):
+    resolution = {'100kb': 100000, '10kb': 10000, '500kb': 50000, '50kb': 50000,"":None}
     bins = (df["pos"]/resolution[res]).astype(np.int).values
 
     for feature in feature_filenames:
-        print "Computing feature: %s"%feature
-        data = np.loadtxt(directory+feature_filenames[feature]+res,dtype=np.str,delimiter="\t")
+        #print "Computing feature: %s"%feature
+        print "Computing feature: {}".format(feature)
+        #data = np.loadtxt(directory+feature_filenames[feature]+res,dtype=np.str,delimiter="\t")
+        data = read_feature_file(directory+feature_filenames[feature]+res)
+        data = full_array(data,res = resolution[res])
+        
         df[feature] = df["pos"]*0
-        for chrom in df["chrom"].unique():
-            idx = np.where(df["chrom"] == chrom)[0]
-            if chrom not in np.unique(data[:,0]):
-                print "Alarm ",feature
-            df.ix[idx,feature] = data[np.where(data[:,0] == chrom)[0],3][bins[idx]].astype(np.float)
+        if isinstance(data,dict):
+            for chrom in df["chrom"].unique():
+                idx = np.where(df["chrom"] == chrom)[0]
+                if chrom not in data:
+                    print "Alarm ",feature
+                df.ix[idx,feature] = data[chrom]["value"][bins[idx]]                
+        else:
+            for chrom in df["chrom"].unique():
+                idx = np.where(df["chrom"] == chrom)[0]
+                if chrom not in np.unique(data[:,0]):
+                    print "Alarm ",feature
+                df.ix[idx,feature] = data[np.where(data[:,0] == chrom)[0],3][bins[idx]].astype(np.float)
     return df
 
 def drop_features(df_modified,columns_to_drop=None):
