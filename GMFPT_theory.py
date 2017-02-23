@@ -103,7 +103,7 @@ def Compute_GMFPT_Feature(newfilename,filepath,res = None, chrom = None):
             #out = out.astype(np.str)
 
             #np.savetxt(f,out,fmt = "%s",delimiter = "\t")
-            write_feature_file(f,out,feature_fmt = "%.f")
+            write_feature_file(f,(chrom,g,bins),res,feature_fmt = "%.f")
             print "%s finished"%chrom
 
         print "Everything is finished" 

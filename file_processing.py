@@ -30,7 +30,6 @@ def write_feature_file(filename,data,res,feature_fmt = "%.3f",**kwargs):
     if bins is None:
         bins = np.arange(n)
         
-    
     if isinstance(chroms,str):
         chroms = [chroms for i in xrange(n)]
         
