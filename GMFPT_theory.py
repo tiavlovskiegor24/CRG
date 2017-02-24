@@ -23,7 +23,7 @@ def Compute_GMFPT_Feature(newfilename,filepath,res = None, chrom = None):
         c = cooler.Cooler(filepath)
 
         if chrom is None:
-            chroms = c.chromnames
+            chroms = [str(chrom) for chrom in c.chromnames]
         else:
             chroms = [chrom]
 
@@ -82,14 +82,12 @@ def Compute_GMFPT_Feature(newfilename,filepath,res = None, chrom = None):
             myplot(g,bins)
             plt.title(chrom)
             plt.show()
-
+            '''            
             out = np.c_[[chrom for i in xrange(g.shape[0])],\
                         bins*res,\
                         (bins+1)*res,\
                         g]
 
-            
-            '''
             g_out = np.array(["%.4f"%(np.nan) for i in xrange(n)],dtype = "S21")
 
             for bin,value in zip(bins,g):
@@ -103,7 +101,7 @@ def Compute_GMFPT_Feature(newfilename,filepath,res = None, chrom = None):
             #out = out.astype(np.str)
 
             #np.savetxt(f,out,fmt = "%s",delimiter = "\t")
-            write_feature_file(f,(chrom,g,bins),res,feature_fmt = "%.f")
+            write_feature_file(f,data = (chrom,bins,g),res=res,feature_fmt = "%.f")
             print "%s finished"%chrom
 
         print "Everything is finished" 

@@ -8,7 +8,7 @@ from hi_c_cooler import hi_c_cooler
 from sparsify import sparsify
 from time import time
 from myplot import myplot
-import file_processing
+from file_processing import write_feature_file
 
 
 def row_sum_feature(newfilename,filepath,res = None, chrom = None):
@@ -23,7 +23,7 @@ def row_sum_feature(newfilename,filepath,res = None, chrom = None):
         c = cooler.Cooler(filepath)
 
         if chrom is None:
-            chroms = c.chromnames
+            chroms = [str(chrom) for chrom in c.chromnames]
         else:
             chroms = [chrom]
 
@@ -38,15 +38,16 @@ def row_sum_feature(newfilename,filepath,res = None, chrom = None):
             myplot(row_sum,bins)
             plt.title(chrom)
             plt.show()
-            
+            '''
             out = np.c_[[chrom for i in xrange(n)],\
                   np.arange(n)*res,\
                   np.arange(1,n+1)*res,\
                         row_sum]
             out = out.astype(np.str)
-
+            '''
             #np.savetxt(f,out,fmt = "%s",delimiter = "\t")
-            write_feature_file(f,out,feature_fmt = "%d")
-            print "%s finished"%chrom
+
+            write_feature_file(f,data = (chrom,bins,row_sum),res = res,feature_fmt = "%d")
+            print "%s finished\n"%chrom
 
         print "Everything is finished" 

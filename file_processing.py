@@ -22,10 +22,10 @@ def read_feature_file(filename,as_dict = True,impute = None, **kwargs):
 def write_feature_file(filename,data,res,feature_fmt = "%.3f",**kwargs):
     # data is a tuple of chromosome, bins and values vectors 
     
-    
     chroms,bins,values = data
 
     n = values.shape[0]
+
     
     if bins is None:
         bins = np.arange(n)
@@ -34,10 +34,13 @@ def write_feature_file(filename,data,res,feature_fmt = "%.3f",**kwargs):
         chroms = [chroms for i in xrange(n)]
         
     array = np.array(zip(chroms,\
-                         np.arange(n)*res,\
-                         np.arange(1,n+1)*res,\
+                         bins*res,\
+                         (bins+1)*res,\
                          values),\
-                     dtype=get_)
+                     dtype=get_feature_file_format())
+
+    
+
     
     chrom_fmt = "%"+str(len(max(array["chrom"],key=len)))+"s"
     fmt = chrom_fmt+"\t%d\t%d\t"+feature_fmt

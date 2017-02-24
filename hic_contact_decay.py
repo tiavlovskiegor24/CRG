@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 from myplot import myplot
 import cooler
 from scipy import sparse
-import file_processing
+from file_processing import write_feature_file
+from hi_c_cooler import hi_c_cooler
 
 def Contact_Decay_Feature(newfilename,filepath,res = None,chrom = None):
     # choose resolution file and chromosome
@@ -17,15 +18,18 @@ def Contact_Decay_Feature(newfilename,filepath,res = None,chrom = None):
         c = cooler.Cooler(filepath)
 
         if chrom is None:
-            chroms = c.chromnames
+            chroms = [str(chrom) for chrom in c.chromnames]
         else:
             chroms = [chrom]
 
         for chrom in chroms:
             print "Processing %s"%chrom
+            print type(chrom)
 
-            cis = sparse.csr_matrix(c.matrix(balance = False)\
-                                    .fetch(chrom)).astype(np.float)
+            #cis = sparse.csr_matrix(c.matrix(balance = False)\
+             #                       .fetch(chrom)).astype(np.float)
+
+            cis,bins = hi_c_cooler(filepath,chrom,res = res)
             n = cis.shape[0]
             try:
                 dec_vec = gen_dec_feature_vec(cis)
@@ -35,17 +39,20 @@ def Contact_Decay_Feature(newfilename,filepath,res = None,chrom = None):
             myplot(dec_vec)
             plt.title(chrom)
             plt.show()
-            
+
+            '''
             dec_vec = ["%.4f"%(i) for i in dec_vec]
+
             out = np.c_[np.array([chrom for i in xrange(n)],dtype = np.str),\
                   np.arange(n)*res,\
                   np.arange(1,n+1)*res,\
                   dec_vec]
             out = out.astype(np.str)
-
+            '''
             #np.savetxt(f,out,fmt = "%s",delimiter = "\t")
-            write_feature_file(f,out,feature_fmt = "%.3f")
-            print "%s finished"%chrom
+
+            write_feature_file(f,data =(chrom,bins,dec_vec),res = res,feature_fmt = "%.3f")
+            print "%s finished\n"%chrom
 
         print "Everything is finished" 
 

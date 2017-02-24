@@ -15,9 +15,10 @@ Managing my work at CRG
 *** TODO finish off write feature file
 
 ** Hi-C matrix features
-*** TODO fix GMFPT feature writing to file
-*** TODO check row sum feature writting to file
-*** TODO check decay constant writting to file
+*** DONE fix GMFPT feature writing to file
+*** DONE check row sum feature writting to file
+*** DONE check decay constant writting to file
+*** TODO compute gmfpt for 10kb
 
 
 * Deep Work Hours
