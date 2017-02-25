@@ -1,0 +1,26 @@
+Managing my work at CRG 
+
+* Diary
+** TODO Create a daily log here 
+
+
+* BHIVE
+** Machine Learning Pipeline
+*** TODO Create SVM pipeline function 
+*** Dataset processing
+**** TODO finish up and test dataset processing pipeline
+
+** File processing
+*** DONE Finish up feature file to full array routine
+*** TODO finish off write feature file
+
+** Hi-C matrix features
+*** DONE fix GMFPT feature writing to file
+*** DONE check row sum feature writting to file
+*** DONE check decay constant writting to file
+*** TODO compute gmfpt for 10kb
+
+
+* Deep Work Hours
+** 20-24.02 ||||||
+** 27-03.03 
