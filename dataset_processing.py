@@ -21,23 +21,48 @@ def table_processing_pipeline(filename):
 
     #enconde categorical features using one hot encoding
     cat_features = ["cat","strand",]
-    df,barcodes = encode_one_hot(df,cat_features)
+    df = encode_one_hot(df,cat_features)
 
-    #drop any features
-    drop_features
+    # get target values from the dataset
+    y = get_target_values(df)
 
-def train_test_split(df,train_f = 0.8):
-    # split into train and test datasets with balanced number of samples for each chromosome
-    train_idx = np.array([],dtype=np.int) 
-    test_idx = np.array([],dtype=np.int)
+    #drop any other features
+    df = drop_features(df)
+
+    #remove Nans
+    
+    
+    # get chromosome indices
+    chrom_sort = {}
     for chrom in df["chrom"].unique():
-        idx = np.where(df["chrom"] == chrom)[0]
-        n = idx.shape[0]
-        s_idx = np.zeros_like(idx,dtype = bool)
-        s_idx[np.random.choice(n,int(n*train_f),replace=False)] = True
-        train_idx= np.r_[train_idx,idx[s_idx]]
-        test_idx = np.r_[test_idx,idx[~s_idx]]
+        chrom_sort[chrom] = np.where(df["chrom"] == chrom)[0]
+    
+    #split in train and test uniformly from each chromosome
+    train_idx,test_idx = train_test_split(df,0.9,chrom_sort)
+    
+    
+def train_test_split(df,train_f = 0.9,chroms_sort = None):
+    '''
+    by default chrom_sort is passed and the dataset is split
+    into train and test datasets with balanced number of samples for each chromosome
+    ''' 
+    if chrom_sort is not None:
+        train_idx = np.array([],dtype=np.int) 
+        test_idx = np.array([],dtype=np.int)
 
+        for chrom,idx in chrom_sort.iteritems():
+            n = idx.shape[0]
+            s_idx = np.zeros_like(idx,dtype = bool)
+            s_idx[np.random.choice(n,int(n*train_f),replace=False)] = True
+            train_idx= np.r_[train_idx,idx[s_idx]]
+            test_idx = np.r_[test_idx,idx[~s_idx]]
+    else:
+        n = df.shape[0]
+        s_idx = np.zeros(n,dtype = bool)
+        s_idx[np.random.choice(n,int(n*train_f),replace=False)] = True
+        train_idx = np.arange(n)[s_indx]
+        test_idx = np.arange(n)[~s_idx]
+        
     return train_idx,test_idx
 
 
@@ -70,22 +95,33 @@ def import_features(df,res = "",directory = None,feature_filenames = None):
 def drop_features(df_modified,columns_to_drop=None):
     if columns_to_drop is None:
         columns_to_drop = ['brcd','pos', 'chrom', 'gene_name',"rep",\
-                       "RNA/DNA","pos_expr","RNA",\
-                       "expr","nread","mapq","DNA"]
+                           "expr","nread","mapq"]
     
     df_dropped = df_modified[columns_to_drop]
     df_modified.drop(columns_to_drop, inplace=True, axis = 1)
     print df_dropped.head()
     del df_dropped
 
+    return df_modified
+
     
-def encode_target_values(df_modified):
-    df_modified["RNA/DNA"] = df_modified["RNA"]*1.0/df_modified["DNA"]
-    df_modified["pos_expr"] = np.where(df_modified["RNA/DNA"] > 3,1.,0.)
-    y = np.array(df_modified["pos_expr"].tolist()).reshape(-1,)\
-                                                  .astype(np.float)
-    print "Label split: %.2f"%(y.sum()/y.shape)[0]
-    print y.shape
+def get_target_values(df_modified,binary = True):
+    # currently target values are asumed
+    exp_ratio = df_modified["RNA"]*1.0/df_modified["DNA"]
+
+    if binary:
+        threshold = 3
+        target = np.where(exp_ratio > threshold,1.,0.)[0]
+        y = target.reshape(-1,).astype(np.float)
+        #y = np.array(df_modified["pos_expr"].tolist()).reshape(-1,)\
+                         #                         .astype(np.float)
+        print "Binary label split: %.2f"%(y.sum()/y.shape)[0]
+        print y.shape
+
+    else:
+        y = exp_ratio
+        
+    df_modified.drop(["RNA","DNA"], inplace=True, axis = 1)
     
     return y
 

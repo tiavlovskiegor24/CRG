@@ -7,18 +7,20 @@ Managing my work at CRG
 * BHIVE
 ** Machine Learning Pipeline
 *** TODO Create SVM pipeline function 
-*** Dataset processing
-**** TODO finish up and test dataset processing pipeline
+*** TODO Test SVM pipeline function
 
+** Dataset processing
+*** DONE drop features
+*** TODO remove Nans from the data set 
 ** File processing
 *** DONE Finish up feature file to full array routine
-*** TODO finish off write feature file
+*** DONE finish off write feature file
 
 ** Hi-C matrix features
 *** DONE fix GMFPT feature writing to file
 *** DONE check row sum feature writting to file
 *** DONE check decay constant writting to file
-*** TODO compute gmfpt for 10kb
+*** DONE compute gmfpt for 10kb
 
 
 * Deep Work Hours
