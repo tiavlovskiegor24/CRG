@@ -11,7 +11,12 @@ Managing my work at CRG
 
 ** Dataset processing
 *** DONE drop features
-*** TODO remove Nans from the data set 
+*** DONE count number of samples with NaNs
+    Number of samples with Nan is 433
+**** TODO remove Nans from the data set and train on those 
+
+
+
 ** File processing
 *** DONE Finish up feature file to full array routine
 *** DONE finish off write feature file

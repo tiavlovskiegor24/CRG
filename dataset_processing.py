@@ -2,14 +2,15 @@ import numpy as np
 import pandas as pd
 from file_processing import read_feature_file, full_array
 
-def table_processing_pipeline(filename):
+def dataset_processing_pipeline(filename):
     #load feature descriptions
     features = load_feature_names("Features.txt")
 
     #read the dataframe from file
-    df = pd.read_table("Jurkat_BHIVE_mini_expr.txt",comment = "#")
+    df = pd.read_table(filename,comment = "#")
 
     #import additional features from files
+    print "\nImporting features from files"
     resolution = "50kb"# select from "10kb","50kb","100kb" and "500kb"
     directory = "/mnt/shared/data/HiC_processing/"
     feature_filenames = {"c_decay":"contacts_decay_Jurkat_",\
@@ -20,28 +21,47 @@ def table_processing_pipeline(filename):
     
 
     #enconde categorical features using one hot encoding
+    print "\nEncoding categorical values"
     cat_features = ["cat","strand",]
     df = encode_one_hot(df,cat_features)
-
-    # get target values from the dataset
-    y = get_target_values(df)
+    df = drop_features(df,cat_features)
+    
 
     #drop any other features
-    df = drop_features(df)
+    print "\nDropping features"
+    columns_to_drop = ['brcd','pos', 'gene_name',"rep",\
+                           "expr","nread","mapq"]
 
-    #remove Nans
+    df = drop_features(df,columns_to_drop)
+
+    #handling Nans
+    print "\nHandling NaNs"
+    nan_samples = (df.isnull().values.sum(axis = 1) > 0)
+    print nan_samples.sum()
+    print df.shape
+    df = df.ix[~nan_samples,:]
     
-    
+    # get target values from the dataset
+    print "\nExtracting target values"
+    y = get_target_values(df)
+    df = drop_features(df,["RNA","DNA"])
+
     # get chromosome indices
     chrom_sort = {}
     for chrom in df["chrom"].unique():
         chrom_sort[chrom] = np.where(df["chrom"] == chrom)[0]
-    
+
+    df = drop_features(df,["chrom"])
+
     #split in train and test uniformly from each chromosome
+    print "Spliting into train and test and saving the datasets"
     train_idx,test_idx = train_test_split(df,0.9,chrom_sort)
+    print train_idx.shape
+    print test_idx.shape
     
     
-def train_test_split(df,train_f = 0.9,chroms_sort = None):
+    
+def train_test_split(df,train_f = 0.9,chrom_sort = None):
     '''
     by default chrom_sort is passed and the dataset is split
     into train and test datasets with balanced number of samples for each chromosome
@@ -72,7 +92,7 @@ def import_features(df,res = "",directory = None,feature_filenames = None):
 
     for feature in feature_filenames:
         #print "Computing feature: %s"%feature
-        print "Computing feature: {}".format(feature)
+        print "\tComputing feature: {}".format(feature)
         #data = np.loadtxt(directory+feature_filenames[feature]+res,dtype=np.str,delimiter="\t")
         data = read_feature_file(directory+feature_filenames[feature]+res)
         data = full_array(data,res = resolution[res])
@@ -94,13 +114,11 @@ def import_features(df,res = "",directory = None,feature_filenames = None):
 
 def drop_features(df_modified,columns_to_drop=None):
     if columns_to_drop is None:
-        columns_to_drop = ['brcd','pos', 'chrom', 'gene_name',"rep",\
+        columns_to_drop = ['brcd','pos', 'gene_name',"rep",\
                            "expr","nread","mapq"]
     
-    df_dropped = df_modified[columns_to_drop]
+    
     df_modified.drop(columns_to_drop, inplace=True, axis = 1)
-    print df_dropped.head()
-    del df_dropped
 
     return df_modified
 
@@ -108,10 +126,11 @@ def drop_features(df_modified,columns_to_drop=None):
 def get_target_values(df_modified,binary = True):
     # currently target values are asumed
     exp_ratio = df_modified["RNA"]*1.0/df_modified["DNA"]
-
+    
     if binary:
         threshold = 3
-        target = np.where(exp_ratio > threshold,1.,0.)[0]
+        target = np.where(exp_ratio.values > threshold,1.,0.)
+        
         y = target.reshape(-1,).astype(np.float)
         #y = np.array(df_modified["pos_expr"].tolist()).reshape(-1,)\
                          #                         .astype(np.float)
@@ -121,7 +140,7 @@ def get_target_values(df_modified,binary = True):
     else:
         y = exp_ratio
         
-    df_modified.drop(["RNA","DNA"], inplace=True, axis = 1)
+    #df_modified.drop(["RNA","DNA"], inplace=True, axis = 1)
     
     return y
 
@@ -149,7 +168,7 @@ def encode_one_hot(df,cat_features = None):
         dummies = pd.get_dummies(df[feature],prefix = feature,drop_first = True)
 
         df = pd.concat([df,dummies],axis = 1)
-        df.drop(feature,inplace = True,axis = 1)
+        #df.drop(feature,inplace = True,axis = 1)
 
     '''
     # category of the intergration site
