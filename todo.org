@@ -5,22 +5,30 @@ Managing my work at CRG
 
 
 * BHIVE
+
 ** Machine Learning Pipeline
 *** TODO Create SVM pipeline function 
-*** Dataset processing
-**** TODO finish up and test dataset processing pipeline
+*** TODO Test SVM pipeline function
+
+
+** Dataset processing
+*** DONE drop features
+*** DONE Split into train and test and save to files
+*** DONE count number of samples with NaNs
+    Number of samples with Nan is 433
+**** DONE remove Nans from the data set and train on those 
+*** TODO log the distance values
+**** TODO mask the values with mean/median ration above 2 
+
 
 ** File processing
 *** DONE Finish up feature file to full array routine
-*** TODO finish off write feature file
+*** DONE finish off write feature file
 
 ** Hi-C matrix features
 *** DONE fix GMFPT feature writing to file
 *** DONE check row sum feature writting to file
 *** DONE check decay constant writting to file
-*** TODO compute gmfpt for 10kb
+*** DONE compute gmfpt for
 
 
-* Deep Work Hours
-** 20-24.02 ||||||
-** 27-03.03 
