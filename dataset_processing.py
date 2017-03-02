@@ -2,9 +2,79 @@ import numpy as np
 import pandas as pd
 from file_processing import read_feature_file, full_array
 
-def dataset_processing_pipeline(filename):
-    #load feature descriptions
-    features = load_feature_names("Features.txt")
+def get_ML_inputs(source,groups = None,cat = ""):
+
+    #create dictionary of relevant inputs to Machine Learning pipeline
+    ML_inputs = dict(filename = None,category=cat,features = None,targets = None,\
+                     groups = None,feature_names = None)
+    
+    
+    if isinstance(source,str):
+        #read the dataframe from file
+        df = pd.read_table(source,comment = "#")
+        ML_inputs["filename"] = source
+        
+    elif isinstance(source,pd.DataFrame):
+        df = source
+    else:
+        print "Invalid source input\n Must be pandas dataset or csv filename"
+        return None
+
+    while cat not in ["train","test"]:
+        cat = raw_input("Indicate 'train' or 'test': ")
+
+
+    if groups is not None:
+        ML_inputs["groups"] = {}
+        for feature in groups:
+            # get group indices
+            if feature in df.columns.tolist():
+                group_sort = {}
+                for group_name in df[feature].unique():
+                    group_sort[group_name] = np.where(df[feature] == group_name)[0]
+
+                df = drop_features(df,[feature])
+
+                ML_inputs["groups"][feature] = group_sort
+            else:
+                continue
+                    
+    #enconde categorical features using one hot encoding
+    print "\nEncoding categorical values"
+    cat_features = ["cat","strand"]
+    df = encode_one_hot(df,cat_features)
+    df = drop_features(df,cat_features)
+
+    # get target values from the dataset 
+    print "\nExtracting target values"
+    targets = df["targets"]
+    df = drop_features(df,["targets"])
+
+    ML_inputs["targets"] = targets
+    
+    #Converting dataset to numpy matrix 
+    print "\nExctacting feature matrix"
+    #print "Max value in the data", df_modified.values.ravel().max()
+    #df_modified.replace(np.nan,1e9,inplace = True)
+    feature_names = df.columns.tolist()
+    features = df.as_matrix().astype(np.float)
+
+    #loging the features if necessary
+    print "Applying log to some matrix features"
+    
+    #idx = np.where((np.mean(features,axis = 0)/np.median(features,axis = 0)))[0]
+    
+    idx = (np.mean(features,axis = 0)/np.median(features,axis = 0) > 2) and 
+
+    features[:,idx] = np.log1p(features[:,idx])
+    
+    ML_inputs["features"] = features
+    ML_inputs["feature_names"] = feature_names
+    
+    return ML_inputs
+
+
+def create_full_dataset(filename,train_test = True):
 
     #read the dataframe from file
     df = pd.read_table(filename,comment = "#")
@@ -17,15 +87,7 @@ def dataset_processing_pipeline(filename):
                          "gmfpt":"gmfpt_feature_Jurkat_",\
                          "row_sum":"row_sum_Jurkat_"}
     
-    df = import_features(df,resolution,directory,feature_filenames)
-    
-
-    #enconde categorical features using one hot encoding
-    print "\nEncoding categorical values"
-    cat_features = ["cat","strand",]
-    df = encode_one_hot(df,cat_features)
-    df = drop_features(df,cat_features)
-    
+    df = import_features(df,resolution,directory,feature_filenames)    
 
     #drop any other features
     print "\nDropping features"
@@ -37,30 +99,39 @@ def dataset_processing_pipeline(filename):
     #handling Nans
     print "\nHandling NaNs"
     nan_samples = (df.isnull().values.sum(axis = 1) > 0)
-    print nan_samples.sum()
-    print df.shape
+    print "\tDropping {} samples with NaN entries".format(nan_samples.sum())
     df = df.ix[~nan_samples,:]
-    
+    print df.isnull().values.sum()
+
     # get target values from the dataset
-    print "\nExtracting target values"
+    print "\nForming target values"
     y = get_target_values(df)
     df = drop_features(df,["RNA","DNA"])
-
+    df["targets"] = y
+    
     # get chromosome indices
     chrom_sort = {}
     for chrom in df["chrom"].unique():
         chrom_sort[chrom] = np.where(df["chrom"] == chrom)[0]
 
-    df = drop_features(df,["chrom"])
+    #df = drop_features(df,["chrom"])
 
-    #split in train and test uniformly from each chromosome
-    print "Spliting into train and test and saving the datasets"
-    train_idx,test_idx = train_test_split(df,0.9,chrom_sort)
-    print train_idx.shape
-    print test_idx.shape
-    
-    
-    
+    if train_test:
+        #split in train and test uniformly from each chromosome
+        print "\nSpliting into train and test and saving the datasets"
+        train_idx,test_idx = train_test_split(df,0.9,chrom_sort)
+        for name,idx in zip(["train","test"],[train_idx,test_idx]):
+
+            to_write = df.iloc[idx,:].copy()
+
+            #if name is "test":
+             #   to_write = drop_features(to_write,["targets"])
+
+            to_write.to_csv("Jurkat_hiv_{}_50kb.txt".format(name),sep="\t",index=False)
+    else:
+        to_write.to_csv("Jurkat_hiv_{}_50kb.txt".format("full"),sep="\t",index=False)        
+                
+            
 def train_test_split(df,train_f = 0.9,chrom_sort = None):
     '''
     by default chrom_sort is passed and the dataset is split
@@ -92,7 +163,7 @@ def import_features(df,res = "",directory = None,feature_filenames = None):
 
     for feature in feature_filenames:
         #print "Computing feature: %s"%feature
-        print "\tComputing feature: {}".format(feature)
+        print "\tImporting feature: {}".format(feature)
         #data = np.loadtxt(directory+feature_filenames[feature]+res,dtype=np.str,delimiter="\t")
         data = read_feature_file(directory+feature_filenames[feature]+res)
         data = full_array(data,res = resolution[res])
@@ -162,9 +233,8 @@ def encode_one_hot(df,cat_features = None):
     
     for feature in cat_features:
         f_values = np.unique(df[feature]) 
-        print 'There are ' + str(f_values.shape[0]) \
-                +' unique values for "%s" feature.\n'%feature
-        print f_values 
+        print '\n\tThere are {} unique values for "{}" feature.'.format(f_values.shape,feature)
+        print "\t",f_values 
         dummies = pd.get_dummies(df[feature],prefix = feature,drop_first = True)
 
         df = pd.concat([df,dummies],axis = 1)
@@ -201,10 +271,5 @@ def encode_one_hot(df,cat_features = None):
     return df
 
 
-def create_matrix(df_modified):
-    print "Max value in the data", df_modified.values.ravel().max()
-    df_modified.replace(np.nan,1e9,inplace = True)
-    col_names = df_modified.columns.tolist()
-    X = df_modified.as_matrix().astype(np.float)
-    return X,col_names
+
 
