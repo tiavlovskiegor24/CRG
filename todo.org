@@ -7,23 +7,29 @@ Managing my work at CRG
 * BHIVE
 
 ** Machine Learning Pipeline
-*** TODO Create SVM pipeline function 
-*** TODO Test SVM pipeline function
-
+*** DONE Create SVM pipeline function 
+*** TODO [#A] Test SVM pipeline function
+    waiting for dataset preprocessing to be finished
 
 ** Dataset processing
 *** DONE drop features
 *** DONE Split into train and test and save to files
 *** DONE count number of samples with NaNs
     Number of samples with Nan is 433
-**** DONE remove Nans from the data set and train on those 
-*** TODO log the distance values
-**** TODO mask the values with mean/median ration above 2 
+    For now I simply deleted those samples
 
+**** DONE remove Nans from the data set and train on those 
+**** TODO Think through more discreet handling of samples with Nans
+     for example leave those samples which have Nan for distance features
+
+*** DONE [#C] create ML_inputs namedtuple rather then dictionary
+*** TODO [#A] extract and store indices of different features types in data dictionary
+*** TODO [#A] apply log to the distance values
 
 ** File processing
 *** DONE Finish up feature file to full array routine
 *** DONE finish off write feature file
+
 
 ** Hi-C matrix features
 *** DONE fix GMFPT feature writing to file

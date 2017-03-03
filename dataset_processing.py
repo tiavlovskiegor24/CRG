@@ -1,12 +1,27 @@
 import numpy as np
 import pandas as pd
 from file_processing import read_feature_file, full_array
+from myplot import myplot
+from collections import namedtuple
 
-def get_ML_inputs(source,groups = None,cat = ""):
+
+class ML_inputs_tuple(object):
+    
+    def __init__(self,ML_inputs_dict):
+        self.data = namedtuple("ML_inputs",ML_inputs_dict.keys())(**ML_inputs_dict)
+    
+    def __getitem__(self,key):
+        return getattr(self.data,key)
+
+    def __repr__(self):
+        return self.data.__repr__()
+
+
+def get_ML_inputs(source,groups = None,cat = "",feature_types = None):
 
     #create dictionary of relevant inputs to Machine Learning pipeline
     ML_inputs = dict(filename = None,category=cat,features = None,targets = None,\
-                     groups = None,feature_names = None)
+                     groups = None,feature_names = None,feature_types = None)
     
     
     if isinstance(source,str):
@@ -23,7 +38,10 @@ def get_ML_inputs(source,groups = None,cat = ""):
     while cat not in ["train","test"]:
         cat = raw_input("Indicate 'train' or 'test': ")
 
-
+    m,n = df.shape # m is number of samples and n is number of features
+    
+    # form index arrays for each of the sample groups
+    groups = ["chrom"]
     if groups is not None:
         ML_inputs["groups"] = {}
         for feature in groups:
@@ -38,6 +56,7 @@ def get_ML_inputs(source,groups = None,cat = ""):
                 ML_inputs["groups"][feature] = group_sort
             else:
                 continue
+
                     
     #enconde categorical features using one hot encoding
     print "\nEncoding categorical values"
@@ -51,25 +70,58 @@ def get_ML_inputs(source,groups = None,cat = ""):
     df = drop_features(df,["targets"])
 
     ML_inputs["targets"] = targets
+
+    feature_names = df.columns.tolist()
+    ML_inputs["feature_names"] = feature_names
     
+    # from index arrays for each feature type
+    f_types = {"distances":{"id_fun":(lambda x:True if x[:2]=="d_" else False)}}
+    
+    if f_types is not None:
+        ML_inputs["feature_types"] = {}
+       
+
+        for f_type in f_types:
+            id_fun = f_types[f_type]["id_fun"]
+            ML_inputs["feature_types"][f_type] = [i for i in xrange(n) if id_fun(feature_names[i])]
+            
     #Converting dataset to numpy matrix 
     print "\nExctacting feature matrix"
-    #print "Max value in the data", df_modified.values.ravel().max()
-    #df_modified.replace(np.nan,1e9,inplace = True)
-    feature_names = df.columns.tolist()
     features = df.as_matrix().astype(np.float)
 
-    #loging the features if necessary
-    print "Applying log to some matrix features"
-    
-    #idx = np.where((np.mean(features,axis = 0)/np.median(features,axis = 0)))[0]
-    
-    idx = (np.mean(features,axis = 0)/np.median(features,axis = 0) > 2) and 
 
-    features[:,idx] = np.log1p(features[:,idx])
+    #loging the features if necessary
+    print "\nApplying log to distance features"
+    #idx = np.where((np.mean(features,axis = 0)/np.median(features,axis = 0)))[0]
+
     
+    #idx = np.where(np.max(features,axis = 0) > 1)[0]
+    means = np.mean(features,axis=0)
+    medians = np.median(features,axis=0)
+    medians[np.where(medians == 0)] = 1
+    idx = np.where(mean)
+    print min(means)
+ 
+    f,ax = myplot(means/medians,style = ".") 
+    ax.hlines(2,0,features.shape[1])
+    ax.set_ylim(ymax = 100)
+
+    idx1 = np.where(means/medians > 2)[0]
+
+    features[:,idx1] = np.log1p(features[:,idx1])
+    means = np.mean(features,axis=0)
+    medians = np.median(features,axis=0)
+    idx = np.where(medians == 0)[0] # features with zero median
+    medians[idx] = 1
+
+    
+    myplot(means/medians,style = ".")
+    
+
     ML_inputs["features"] = features
-    ML_inputs["feature_names"] = feature_names
+
+    #convert inputs to tuple
+    ML_inputs = ML_inputs_tuple(ML_inputs)
     
     return ML_inputs
 
@@ -206,7 +258,7 @@ def get_target_values(df_modified,binary = True):
         #y = np.array(df_modified["pos_expr"].tolist()).reshape(-1,)\
                          #                         .astype(np.float)
         print "Binary label split: %.2f"%(y.sum()/y.shape)[0]
-        print y.shape
+        #print y.shape
 
     else:
         y = exp_ratio
