@@ -75,7 +75,7 @@ def get_ML_inputs(source,groups = None,cat = "",feature_types = None):
     ML_inputs["feature_names"] = feature_names
     
     # from index arrays for each feature type
-    f_types = {"distances":{"id_fun":(lambda x:True if x[:2]=="d_" else False)}}
+    f_types = {"distances":{"id_fun":(lambda x:True if x[:2]=="d_" else False),"preprocess":np.log1p}}
     
     if f_types is not None:
         ML_inputs["feature_types"] = {}
@@ -90,33 +90,15 @@ def get_ML_inputs(source,groups = None,cat = "",feature_types = None):
     features = df.as_matrix().astype(np.float)
 
 
-    #loging the features if necessary
-    print "\nApplying log to distance features"
-    #idx = np.where((np.mean(features,axis = 0)/np.median(features,axis = 0)))[0]
-
-    
-    #idx = np.where(np.max(features,axis = 0) > 1)[0]
-    means = np.mean(features,axis=0)
-    medians = np.median(features,axis=0)
-    medians[np.where(medians == 0)] = 1
-    idx = np.where(mean)
-    print min(means)
- 
-    f,ax = myplot(means/medians,style = ".") 
-    ax.hlines(2,0,features.shape[1])
-    ax.set_ylim(ymax = 100)
-
-    idx1 = np.where(means/medians > 2)[0]
-
-    features[:,idx1] = np.log1p(features[:,idx1])
-    means = np.mean(features,axis=0)
-    medians = np.median(features,axis=0)
-    idx = np.where(medians == 0)[0] # features with zero median
-    medians[idx] = 1
-
-    
-    myplot(means/medians,style = ".")
-    
+    # preprocess features of specific types
+    if f_types is not None:
+        print "\nPreprocessing feature values"
+        for f_type in f_types:
+            idx = ML_inputs["feature_types"][f_type]
+            p_fun = f_types[f_type]["preprocess"]
+            print "\tApplying '{}' to '{}' features".format(p_fun.__name__,f_type)
+            df.iloc[:,idx] = p_fun(df.iloc[:,idx].values)
+            
 
     ML_inputs["features"] = features
 

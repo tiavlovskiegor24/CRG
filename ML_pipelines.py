@@ -75,7 +75,7 @@ def grid_search(clf,X,y,parameters,cv=10):
     '''
     return clf
 
-def run_ML(ML_inputs,estimator = RF_pipeline,by_group = None,**kwargs):
+def run_ML(ML_inputs,estimator = SVM_pipeline,by_group = None,**kwargs):
 
     if by_group is None:
         X = ML_inputs["features"]

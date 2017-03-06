@@ -6,10 +6,18 @@ Managing my work at CRG
 
 * BHIVE
 
+** Analysis
+*** [#A] HIV expression prediciton
+**** TODO Run SVMs
+**** TODO Run RF
+**** TODO Run gradient boosting
+
+
+
 ** Machine Learning Pipeline
 *** DONE Create SVM pipeline function 
 *** TODO [#A] Test SVM pipeline function
-    waiting for dataset preprocessing to be finished
+    in progress
 
 ** Dataset processing
 *** DONE drop features
@@ -23,9 +31,9 @@ Managing my work at CRG
      for example leave those samples which have Nan for distance features
 
 *** DONE [#C] create ML_inputs namedtuple rather then dictionary
-*** TODO [#A] extract and store indices of different features types in data dictionary
-*** TODO [#A] apply log to the distance values
-
+*** DONE [#A] extract and store indices of different features types in ML_inputs tuple
+*** DONE [#A] apply log1p to the distance values
+*** TODO [#A] Only leave '_r' scores, drop the rest
 ** File processing
 *** DONE Finish up feature file to full array routine
 *** DONE finish off write feature file
