@@ -61,7 +61,7 @@ def grid_search(clf,X,y,parameters,cv=10):
     
     print "\n\tPerforming parameter grid search..."
     t = time()
-    clf = GridSearchCV(clf, parameters,cv = cv)
+    clf = GridSearchCV(clf, parameters,cv = cv,n_jobs = -1)
     clf.fit(X,y)
     print "\t\tTime taken:{}".format(time()-t)
     print "\tBest parameters:",clf.best_params_
