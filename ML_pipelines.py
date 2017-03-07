@@ -12,6 +12,7 @@ from time import time
 #from sklearn.decomposition import PCA, KernelPCA
 import numpy as np
 import pandas as pd
+from time import time
 
 
 
@@ -44,8 +45,7 @@ def SVM_pipeline(X,y,parameters = None,**kwargs):
     if parameters is None:
         parameters = {"svc__C":[0.1,1,10],"svc__gamma":[0.01,.01,.1]}
     clf = grid_search(clf,X,y,parameters)
-
-    print "\n\tCross-validating best parameter"
+    print "\n\tCross-validating best parameters"
     cv = StratifiedKFold(n_splits=10)
     scores = cross_val_score(clf.best_estimator_, X, y, cv=cv)
 
@@ -59,9 +59,11 @@ def SVM_pipeline(X,y,parameters = None,**kwargs):
 
 def grid_search(clf,X,y,parameters,cv=10):
     
-    print "\n\t Performing parameter grid search..."
+    print "\n\tPerforming parameter grid search..."
+    t = time()
     clf = GridSearchCV(clf, parameters,cv = cv)
     clf.fit(X,y)
+    print "\t\tTime taken:{}".format(time()-t)
     print "\tBest parameters:",clf.best_params_
     #print "Best parameters score:",clf.best_score_
 
@@ -75,28 +77,30 @@ def grid_search(clf,X,y,parameters,cv=10):
     '''
     return clf
 
-def run_ML(ML_inputs,estimator = SVM_pipeline,by_group = None,**kwargs):
 
-    if by_group is None:
+def run_ML(ML_inputs,estimator = SVM_pipeline,by_groups = None,**kwargs):
+
+    if by_groups is None:
         X = ML_inputs["features"]
         y = ML_inputs["targets"]
         print "Running ML..."
-        estimator(X,y,**kwargs)
+        return  estimator(X,y,**kwargs)
     else:
         
-        while by_group not in ML_inputs["groups"]:
+        while by_groups not in ML_inputs["groups"]:
             by_group = raw_input("Select group from:\n {}\n or enter 'c' to CANCEL: "\
                               .format(ML_inputs["groups"].keys()))
-            if by_group == "c":
+            if by_groups == "c":
                 print "Cancelled"
                 return None
 
-        for name,idx in ML_inputs["groups"][by_group].iteritems():
-            print "\nRunning ML for '{g}' = '{n}'".format(g = by_group,n = name)
+        group_clfs = {}
+        for name,idx in ML_inputs["groups"][by_groups].iteritems():
+            print "\nRunning ML for '{g}' = '{n}'".format(g = by_groups,n = name)
             X = ML_inputs["features"][idx]
             y = ML_inputs["targets"][idx]
             print "Group data set has {} samples".format(y.shape[0])
-            estimator(X,y,**kwargs)
-    
-    
+            group_clfs[name] = estimator(X,y,**kwargs)
+        
+        return group_clfs
     

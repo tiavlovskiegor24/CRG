@@ -1,4 +1,8 @@
+#+STARTUP: indent
+#+STARTUP: (drag-stuff-mode t)
+
 Managing my work at CRG 
+
 
 * Diary
 ** TODO Create a daily log here 
@@ -16,8 +20,11 @@ Managing my work at CRG
 
 ** Machine Learning Pipeline
 *** DONE Create SVM pipeline function 
-*** TODO [#A] Test SVM pipeline function
-    in progress
+*** DONE Test SVM pipeline function
+    SCHEDULED: <2017-03-07 Tue>
+    Seems to be working
+*** TODO Consider moving the scalling of features to the dataset preprocessing stage 
+
 
 ** Dataset processing
 *** DONE drop features
@@ -34,7 +41,8 @@ Managing my work at CRG
 *** DONE [#A] extract and store indices of different features types in ML_inputs tuple
 *** DONE [#A] apply log1p to the distance values
 *** TODO [#A] Only leave '_r' scores, drop the rest
-** File processing
+
+** Feature File processing
 *** DONE Finish up feature file to full array routine
 *** DONE finish off write feature file
 

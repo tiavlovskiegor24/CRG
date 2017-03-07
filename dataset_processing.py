@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from file_processing import read_feature_file, full_array
+from feature_file_processing import read_feature_file, full_array
 from myplot import myplot
 from collections import namedtuple
 
@@ -17,11 +17,11 @@ class ML_inputs_tuple(object):
         return self.data.__repr__()
 
 
-def get_ML_inputs(source,groups = None,cat = "",feature_types = None):
+def get_ML_inputs(source,sample_groups = None,cat = "",feature_types = None):
 
     #create dictionary of relevant inputs to Machine Learning pipeline
     ML_inputs = dict(filename = None,category=cat,features = None,targets = None,\
-                     groups = None,feature_names = None,feature_types = None)
+                     sample_groups = None,feature_names = None,feature_types = None)
     
     
     if isinstance(source,str):
@@ -42,9 +42,9 @@ def get_ML_inputs(source,groups = None,cat = "",feature_types = None):
     
     # form index arrays for each of the sample groups
     groups = ["chrom"]
-    if groups is not None:
+    if sample_groups is not None:
         ML_inputs["groups"] = {}
-        for feature in groups:
+        for feature in sample_groups:
             # get group indices
             if feature in df.columns.tolist():
                 group_sort = {}
@@ -53,7 +53,7 @@ def get_ML_inputs(source,groups = None,cat = "",feature_types = None):
 
                 df = drop_features(df,[feature])
 
-                ML_inputs["groups"][feature] = group_sort
+                ML_inputs["sample_groups"][feature] = group_sort
             else:
                 continue
 
