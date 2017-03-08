@@ -1,5 +1,4 @@
 #+STARTUP: indent
-#+STARTUP: (drag-stuff-mode t)
 
 Managing my work at CRG 
 
