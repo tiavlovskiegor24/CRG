@@ -1,5 +1,0 @@
-all:
-
-%.pyc:%.py
-	python -m compileall $<
-
