@@ -3,16 +3,29 @@
 Managing my work at CRG 
 
 
-* Diary
-** TODO Create a daily log here 
+* Task log 
 
+** March 17
 
-* BHIVE
+*** Fri 10
+SCHEDULED: <2017-03-10 Fri>
+
+**** TODO Only leave '_r' scores, drop the rest      :BHIVE:DS_processing:
+**** TODO Moving the scalling of features to the DS preprocessing stage :BHIVE:DS_processing:ML_inputs:
+move the issue to the feature_type processing [[file:feature_types.py][rules]] 
+**** TODO Think through more discreet handling of samples with Nans :BHIVE:DS_processing:
+for example leave those samples which have Nan for distance features
+move the issue to the feature_type processing [[file:feature_types.py][rules]] 
+**** TODO Create Adaboost pipeline                     :BHIVE:ML_pipeline:
+**** TODO Add gradient boosting to ML_pipeline
+
+* BHIVE (archive)
 
 ** Analysis
-*** [#A] HIV expression prediciton
+*** HIV expression prediciton
 **** TODO Run SVMs
 **** TODO Run RF
+**** TODO Run AdaBoost
 **** TODO Run gradient boosting
 
 
@@ -22,7 +35,6 @@ Managing my work at CRG
 *** DONE Test SVM pipeline function
     SCHEDULED: <2017-03-07 Tue>
     Seems to be working
-*** TODO Consider moving the scalling of features to the dataset preprocessing stage 
 
 
 ** Dataset processing
@@ -33,13 +45,12 @@ Managing my work at CRG
     For now I simply deleted those samples
 
 **** DONE remove Nans from the data set and train on those 
-**** TODO Think through more discreet handling of samples with Nans
-     for example leave those samples which have Nan for distance features
 
 *** DONE [#C] create ML_inputs namedtuple rather then dictionary
 *** DONE [#A] extract and store indices of different features types in ML_inputs tuple
 *** DONE [#A] apply log1p to the distance values
-*** TODO [#A] Only leave '_r' scores, drop the rest
+
+
 
 ** Feature File processing
 *** DONE Finish up feature file to full array routine
@@ -50,6 +61,4 @@ Managing my work at CRG
 *** DONE fix GMFPT feature writing to file
 *** DONE check row sum feature writting to file
 *** DONE check decay constant writting to file
-*** DONE compute gmfpt for
-
-
+*** DONE compute gmfpt 

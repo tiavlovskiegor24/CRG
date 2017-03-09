@@ -17,10 +17,10 @@ class ML_inputs_tuple(object):
         return self.data.__repr__()
 
 
-def get_ML_inputs(source,sample_groups = None,cat = "",feature_types = None):
+def get_ML_inputs(source,sample_groups = None,cat = "",present_feature_types = None):
 
     #create dictionary of relevant inputs to Machine Learning pipeline
-    ML_inputs = dict(filename = None,category=cat,features = None,targets = None,\
+    ML_inputs = dict(filename = None,category=cat,samples = None,targets = None,\
                      sample_groups = None,feature_names = None,feature_types = None)
     
     
@@ -41,9 +41,9 @@ def get_ML_inputs(source,sample_groups = None,cat = "",feature_types = None):
     m,n = df.shape # m is number of samples and n is number of features
     
     # form index arrays for each of the sample groups
-    groups = ["chrom"]
+    sample_groups = ["chrom"]
     if sample_groups is not None:
-        ML_inputs["groups"] = {}
+        ML_inputs["sample_groups"] = {}
         for feature in sample_groups:
             # get group indices
             if feature in df.columns.tolist():
@@ -57,6 +57,19 @@ def get_ML_inputs(source,sample_groups = None,cat = "",feature_types = None):
             else:
                 continue
 
+    #drop features
+    print "\nDropping features"
+    columns_to_drop = ['brcd','pos', 'gene_name',"rep",\
+                           "expr","nread","mapq",]
+
+    df = drop_features(df,columns_to_drop)
+
+    #handling Nans
+    print "\nHandling NaNs"
+    nan_samples = (df.isnull().values.sum(axis = 1) > 0)
+    print "\tDropping {} samples with NaN entries".format(nan_samples.sum())
+    df = df.ix[~nan_samples,:]
+    print df.isnull().values.sum()
                     
     #enconde categorical features using one hot encoding
     print "\nEncoding categorical values"
@@ -74,33 +87,34 @@ def get_ML_inputs(source,sample_groups = None,cat = "",feature_types = None):
     feature_names = df.columns.tolist()
     ML_inputs["feature_names"] = feature_names
     
-    # from index arrays for each feature type
-    f_types = {"distances":{"id_fun":(lambda x:True if x[:2]=="d_" else False),"preprocess":np.log1p}}
+
+    # identify all features_types present in dataset
+    from feature_types import feature_types_dict as f_types    
     
-    if f_types is not None:
-        ML_inputs["feature_types"] = {}
-       
+    ML_inputs["feature_types"] = {}
 
-        for f_type in f_types:
-            id_fun = f_types[f_type]["id_fun"]
-            ML_inputs["feature_types"][f_type] = [i for i in xrange(n) if id_fun(feature_names[i])]
+    for f_type in f_types:
+        print "\n",f_type
+        id_fun = f_types[f_type]["id_fun"]
+        idx = [i for i in xrange(n) if id_fun(feature_names[i])]
+        if idx:
+            ML_inputs["feature_types"][f_type] = np.array(idx) 
             
-    #Converting dataset to numpy matrix 
-    print "\nExctacting feature matrix"
-    features = df.as_matrix().astype(np.float)
-
-
+            
     # preprocess features of specific types
-    if f_types is not None:
-        print "\nPreprocessing feature values"
-        for f_type in f_types:
-            idx = ML_inputs["feature_types"][f_type]
-            p_fun = f_types[f_type]["preprocess"]
+    print "\nPreprocessing feature values"
+    for f_type in f_types:
+        idx = ML_inputs["feature_types"][f_type]
+        p_fun = f_types[f_type]["preprocess"]
+        if p_fun is not None:
             print "\tApplying '{}' to '{}' features".format(p_fun.__name__,f_type)
             df.iloc[:,idx] = p_fun(df.iloc[:,idx].values)
-            
 
-    ML_inputs["features"] = features
+    #Converting dataset to numpy matrix 
+    print "\nExctacting feature matrix"
+    samples = df.as_matrix().astype(np.float)
+
+    ML_inputs["samples"] = samples
 
     #convert inputs to tuple
     ML_inputs = ML_inputs_tuple(ML_inputs)
@@ -122,20 +136,6 @@ def create_full_dataset(filename,train_test = True):
                          "row_sum":"row_sum_Jurkat_"}
     
     df = import_features(df,resolution,directory,feature_filenames)    
-
-    #drop any other features
-    print "\nDropping features"
-    columns_to_drop = ['brcd','pos', 'gene_name',"rep",\
-                           "expr","nread","mapq"]
-
-    df = drop_features(df,columns_to_drop)
-
-    #handling Nans
-    print "\nHandling NaNs"
-    nan_samples = (df.isnull().values.sum(axis = 1) > 0)
-    print "\tDropping {} samples with NaN entries".format(nan_samples.sum())
-    df = df.ix[~nan_samples,:]
-    print df.isnull().values.sum()
 
     # get target values from the dataset
     print "\nForming target values"
@@ -269,7 +269,7 @@ def encode_one_hot(df,cat_features = None):
         f_values = np.unique(df[feature]) 
         print '\n\tThere are {} unique values for "{}" feature.'.format(f_values.shape,feature)
         print "\t",f_values 
-        dummies = pd.get_dummies(df[feature],prefix = feature,drop_first = True)
+        dummies = pd.get_dummies(df[feature],prefix = feature+"_oh_",drop_first = True)
 
         df = pd.concat([df,dummies],axis = 1)
         #df.drop(feature,inplace = True,axis = 1)
