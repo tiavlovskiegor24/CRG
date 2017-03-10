@@ -1,24 +1,51 @@
 
-# Look up table of existing feature_types each with the following default template:
+# Look up table of existing feature_types
+
+### FOLLOW THE STEPS BELOW
+
+### 1. Import the relevant modules for preprocessing ###
+import numpy as np
+
+
+
+### 2. Include definitions of preprocessing functions if necessary ###
+
+def distance_preprocessing(array,ml_method = None):
+    # assuming feature values are stored as columns
+
+    #Nan handling
+    print "\tSubstituting NaNs with the values 10 times larger than max value found in the dataset"
+    max_value = np.nanmax(array)
+    print "\tMax value in the data{}".format(max_value)
+    array = np.where(np.isnan(array),max_value*10,array)
+
+    if ml_method == "SVM":
+        print "Applying log1p to distance values"
+        array = np.log1p(array)
+        
+    return array
+
+
+
+
+### 3. Add the feature type entry to the dictionary below with the following default format ###
 
 '''
-"feature_type_name" : {
-    #don't forget to import required modules for preprocessing functions
-    
-    "id_fun":(lambda x: True if (???) else False), # function that takes the string name \
-    #of the feature and return True if feature belongs to this feature type
+    "feature_type_name" : {
 
-    "preprocess":reduce((lambda x,fun: fun(x) ),[fun1,fun2,...]), # a list of \
-    #preprocessing functions [fun1,fun2,...] to be applied on the feature values
+        "id_fun":(lambda x: True if (???) else False), # function that takes the string name \
+        #of the feature and return True if feature belongs to this feature type
 
-    "file_format":".txt", # details of the feature file format 
+        "preprocess":reduce((lambda x,fun: fun(x) ),[fun1,fun2,...]), # a list of \
+        #preprocessing functions [fun1,fun2,...] to be applied on the feature values
 
-    "about":"...", # short description of the feature type
-}, # don't forget a comma at the end of the entry
+        "file_format":".txt", # details of the feature file format 
+
+        "about":"...", # short description of the feature type
+    }, # don't forget a comma at the end of the entry
 '''
 
-# import the relevant modules for preprocessing
-import numpy as np 
+
 
 feature_types_dict = {
 
@@ -27,7 +54,7 @@ feature_types_dict = {
 
         "id_fun":(lambda x:True if ( x[:2]=="d_" or x.find("_d_") > -1 ) else False),
 
-        "preprocess":np.log1p,
+        "preprocess":distance_preprocessing,
 
         "file_format":"",
 
@@ -42,7 +69,7 @@ feature_types_dict = {
         "id_fun":(lambda x: True if (x.find("gmfpt") > -1) else False), # function that takes \
         #the string name of the feature and return True if feature belongs to this feature type
 
-        "preprocess":(lambda x: x), # include list of \
+        "preprocess":None, # include list of \
         #preprocessing functions [fun1,fun2,...] to be applied on the feature values
 
         "file_format":"tab separated bed file with in .txt format", # details of the \

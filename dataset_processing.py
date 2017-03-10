@@ -17,32 +17,35 @@ class ML_inputs_tuple(object):
         return self.data.__repr__()
 
 
-def get_ML_inputs(source,sample_groups = None,cat = "",present_feature_types = None):
+def get_ML_inputs(dataset = None,cat = "",):
+    # importing pipeline controls
+    from control_file import ml_method, features_to_drop_list, sample_groups, source
 
-    #create dictionary of relevant inputs to Machine Learning pipeline
+    # importing feature types dictionary
+    from feature_types import feature_types_dict as f_types    
+
+    
+    #create datastructure of relevant inputs to Machine Learning pipeline
     ML_inputs = dict(filename = None,category=cat,samples = None,targets = None,\
                      sample_groups = None,feature_names = None,feature_types = None)
     
     
-    if isinstance(source,str):
+    if dataset is None:
         #read the dataframe from file
         df = pd.read_table(source,comment = "#")
-        ML_inputs["filename"] = source
-        
-    elif isinstance(source,pd.DataFrame):
+        ML_inputs["filename"] = source    
+    elif isinstance(dataset,pd.DataFrame):
         df = source
     else:
         print "Invalid source input\n Must be pandas dataset or csv filename"
         return None
 
+    
     while cat not in ["train","test"]:
         cat = raw_input("Indicate 'train' or 'test': ")
-
-    m,n = df.shape # m is number of samples and n is number of features
     
     # form index arrays for each of the sample groups
-    sample_groups = ["chrom"]
-    if sample_groups is not None:
+    if sample_groups:
         ML_inputs["sample_groups"] = {}
         for feature in sample_groups:
             # get group indices
@@ -51,45 +54,27 @@ def get_ML_inputs(source,sample_groups = None,cat = "",present_feature_types = N
                 for group_name in df[feature].unique():
                     group_sort[group_name] = np.where(df[feature] == group_name)[0]
 
-                df = drop_features(df,[feature])
-
                 ML_inputs["sample_groups"][feature] = group_sort
             else:
                 continue
 
-    #drop features
-    print "\nDropping features"
-    columns_to_drop = ['brcd','pos', 'gene_name',"rep",\
-                           "expr","nread","mapq",]
-
-    df = drop_features(df,columns_to_drop)
-
-    #handling Nans
-    print "\nHandling NaNs"
-    nan_samples = (df.isnull().values.sum(axis = 1) > 0)
-    print "\tDropping {} samples with NaN entries".format(nan_samples.sum())
-    df = df.ix[~nan_samples,:]
-    print df.isnull().values.sum()
-                    
     #enconde categorical features using one hot encoding
     print "\nEncoding categorical values"
     cat_features = ["cat","strand"]
     df = encode_one_hot(df,cat_features)
     df = drop_features(df,cat_features)
 
-    # get target values from the dataset 
-    print "\nExtracting target values"
-    targets = df["targets"]
-    df = drop_features(df,["targets"])
 
-    ML_inputs["targets"] = targets
-
+    #drop features
+    if features_to_drop_list:
+        print "\nDropping features"
+        df = drop_features(df,columns_to_drop_list)
+                    
+    m,n = df.shape # m is number of samples and n is number of features
     feature_names = df.columns.tolist()
-    ML_inputs["feature_names"] = feature_names
-    
 
+    
     # identify all features_types present in dataset
-    from feature_types import feature_types_dict as f_types    
     
     ML_inputs["feature_types"] = {}
 
@@ -107,8 +92,26 @@ def get_ML_inputs(source,sample_groups = None,cat = "",present_feature_types = N
         idx = ML_inputs["feature_types"][f_type]
         p_fun = f_types[f_type]["preprocess"]
         if p_fun is not None:
-            print "\tApplying '{}' to '{}' features".format(p_fun.__name__,f_type)
+            print "\tPreprocessing '{}' features".format(f_type)
             df.iloc[:,idx] = p_fun(df.iloc[:,idx].values)
+
+
+    #removing all the remaining Nans
+    print "\nRemoving samples with NaNs"
+    nan_samples = (df.isnull().values.sum(axis = 1) > 0)
+    print "\tDropping {} samples with NaN entries".format(nan_samples.sum())
+    df = df.ix[~nan_samples,:]
+    print df.isnull().values.sum()
+
+    # get target values from the dataset 
+    print "\nExtracting target values"
+    targets = df["targets"]
+    df = drop_features(df,["targets"])
+
+    ML_inputs["targets"] = targets
+
+    ML_inputs["feature_names"] = feature_names
+    
 
     #Converting dataset to numpy matrix 
     print "\nExctacting feature matrix"
@@ -161,9 +164,9 @@ def create_full_dataset(filename,train_test = True):
             #if name is "test":
              #   to_write = drop_features(to_write,["targets"])
 
-            to_write.to_csv("Jurkat_hiv_{}_50kb.txt".format(name),sep="\t",index=False)
+            to_write.to_csv("data/Jurkat_hiv_{}_50kb.txt".format(name),sep="\t",index=False)
     else:
-        to_write.to_csv("Jurkat_hiv_{}_50kb.txt".format("full"),sep="\t",index=False)        
+        to_write.to_csv("data/Jurkat_hiv_{}_50kb.txt".format("full"),sep="\t",index=False)        
                 
             
 def train_test_split(df,train_f = 0.9,chrom_sort = None):
