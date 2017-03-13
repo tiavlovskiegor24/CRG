@@ -8,12 +8,18 @@ Managing my work at CRG
 ** March 17
 
 *** Fri 10
-SCHEDULED: <2017-03-10 Fri>
 
-**** TODO Only leave '_r' scores, drop the rest      :bhive:ds_processing:
-**** TODO Moving the scalling of features to the DS preprocessing stage :bhive:ds_processing:ml_inputs:
-move the issue to the feature_type processing [[file:feature_types.py][rules]] 
-**** TODO Think through more discreet handling of samples with Nans :bhive:ds_processing:
+*** Mon 13
+**** DONE Only leave '_r' scores, drop the rest      :bhive:ds_processing:
+CLOSED: [2017-03-13 Mon 15:59]
+
+***** DONE Include this features in the [[file:feature_types.py][feature types]]
+CLOSED: [2017-03-13 Mon 14:46]
+***** DONE Visualise and choose preprocessing of this types
+CLOSED: [2017-03-13 Mon 15:08]
+Eduard said that gaussian normalisation would be fine
+**** DONE Think through more discreet handling of samples with Nans :bhive:ds_processing:
+CLOSED: [2017-03-13 Mon 15:11]
 ***** DONE for example leave those samples which have Nan for distance features
 CLOSED: [2017-03-10 Fri 17:25]
 substituting distance Nan with 10*max distance value in dataset
@@ -26,29 +32,40 @@ untouched thus allowing the entire sample to be removed from the dataset
 After feature_type preproicessing all the samples with Nans are removed befor passing
 them to machine learning 
 
-****** TODO Consider not removing samples with Nans but masking them instead
-SCHEDULED: <2017-03-13 Mon>
-simply store the indices of Nan samples which will not be passed to ml optimization
-
-
+****** DONE Consider not removing samples with Nans but masking them instead
+CLOSED: [2017-03-13 Mon 14:24] SCHEDULED: <2017-03-13 Mon>
+simply store the indices of non-Nan samples which will be passed to ml optimization
+**** DONE create control file for the form_full_dataset and prepare_ML_inputs routines 
+CLOSED: [2017-03-13 Mon 16:01]
+**** DONE Consider not dropping rows and columns of dataset for ML_inputs but creating masks
+CLOSED: [2017-03-13 Mon 14:25] SCHEDULED: <2017-03-13 Mon>
+*** Tue 14 
+**** TODO Generate classification report for predictions on test dataset using best param classifier :bhive:ml_pipeline:
+SCHEDULED: <2017-03-14 Tue 14:00>
+**** TODO Include preprocessing functions for feature types in [[file:feature_types.py][feature_types]] :bhive:features:ds_processing:
+SCHEDULED: <2017-03-14 Tue 15:00>
+***** TODO Chip-c features
+***** TODO GMFPT
+***** TODO Row sum
+***** TODO contact decay
+***** TODO AB-score
 **** TODO Create Adaboost pipeline                     :bhive:ml_pipeline:
 **** TODO Add gradient boosting to ML_pipeline
-**** TODO create control file for the form_full_dataset and prepare_ML_inputs routines 
+**** TODO Move target values selection and processing to control file
+
+**** TODO Moving the scalling of features to the DS preprocessing stage :bhive:ds_processing:ml_inputs:
+move the issue to the feature_type processing [[file:feature_types.py][rules]] 
 **** TODO Consider changing the present feature type mapping in dataset :ds_processing:
 For example check for present feature_types by looking through dataset column names and
 checking "_? _" segments of the name the feature type id look up table
 **** TODO Include categorical feature type into [[file:feature_types.py][our feature dictionary]]
-*** TODO Consider not dropping rows of columns of dataset for ML_inputs but creating masks
-SCHEDULED: <2017-03-13 Mon>
-
-
-
+**** TODO Swithc back to regression on expression level
 * BHIVE (archive)** Analysis
 *** HIV expression prediciton
-**** TODO Run SVMs
-**** TODO Run RF
-**** TODO Run AdaBoost
-**** TODO Run gradient boosting
+**** Run SVMs
+**** Run RF
+**** Run AdaBoost
+**** Run gradient boosting
 
 
 

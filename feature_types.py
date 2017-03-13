@@ -16,15 +16,17 @@ def distance_preprocessing(array,ml_method = None):
     #Nan handling
     print "\tSubstituting NaNs with the values 10 times larger than max value found in the dataset"
     max_value = np.nanmax(array)
-    print "\tMax value in the data{}".format(max_value)
+    print "\tMax value in the data {}".format(max_value)
     array = np.where(np.isnan(array),max_value*10,array)
 
     if ml_method == "SVM":
-        print "Applying log1p to distance values"
+        print "\tApplying log1p to distance values"
         array = np.log1p(array)
         
     return array
 
+    
+    
 
 
 
@@ -92,4 +94,73 @@ feature_types_dict = {
         "about" : "features created from categorical ones using one_hot encoding", 
         
     }, # don't forget a comma at the end of the entry
+
+
+    # Chip-C features created by Eduard
+    "chip_c_zb" : {
+
+        "id_fun" : (lambda x: True if (x[-3:] == "_zb")  else False), 
+
+        "preprocess" :None, 
+        
+        "file_format" : "this features are not stored explicitly in files", 
+       
+        "about" : "Total count of enriched (p=1.0) zerone bins (300bp) within all contacts", 
+        
+    },
+
+
+    "chip_c_zb_r" : {
+
+        "id_fun" : (lambda x: True if (x[-5:] == "_zb_r")  else False), 
+
+        "preprocess" : None, 
+        
+        "file_format" : "this features are not stored explicitly in files", 
+       
+        "about" : "Mean number of enriched zerone bins (300bp) per Hi-C bin (50kb)", 
+        
+    },
+
+    
+    "chip_c_hb" : {
+
+        "id_fun" : (lambda x: True if (x[-3:] == "_hb")  else False), 
+
+        "preprocess" : None, 
+        
+        "file_format" : "this features are not stored explicitly in files", 
+       
+        "about" : "Number of Hi-C contacts (50kb) containing at least one enriched zerone bin (300bp).", 
+        
+    },
+
+
+    "chip_c_hb_r" : {
+
+        "id_fun" : (lambda x: True if (x[-5:] == "_hb_r")  else False), 
+
+        "preprocess" : None, 
+        
+        "file_format" : "this features are not stored explicitly in files", 
+       
+        "about" : "rate of Hi-C contacts containing at least one enriched zerone bin. (i.e. hb/#contacts)", 
+        
+    },
+
+
+    # categorical features
+    "categorical" : {
+
+        "id_fun" : (lambda x: True if (x.find("categ_") > -1) else False), 
+
+        "preprocess" : None, 
+        
+        "file_format" : "", 
+       
+        "about" : "categorical feature", 
+        
+    },
+    
+    
 }

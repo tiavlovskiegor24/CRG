@@ -13,13 +13,28 @@ class ML_inputs_tuple(object):
     def __getitem__(self,key):
         return getattr(self.data,key)
 
+    def get_data(self,mask = True):
+        if not mask:
+            confirm = raw_input("Are you sure you want to get non-masked data?(Y/n)\n Some samples may contain Nans and some columns may not be suitable for Machine Learning")
+            if confirm == "Y":
+                samples = getattr(self.data,"samples")
+                targets = getattr(self.data,"targets")
+                return samples,targets
+            
+        print "Returning masked data"
+        samples_mask,features_mask = getattr(self.data,"mask")
+        samples = getattr(self.data,"samples")[samples_mask,:][:,features_mask].astype(np.float)
+        targets = getattr(self.data,"targets")[samples_mask].astype(np.float)
+
+        return samples,targets
+        
     def __repr__(self):
         return self.data.__repr__()
 
 
 def get_ML_inputs(dataset = None,cat = "",):
     # importing pipeline controls
-    from control_file import ml_method, features_to_drop_list, sample_groups, source
+    from control_file import ml_method, feature_types_to_exclude_list, features_to_exclude_list, sample_groups, source
 
     # importing feature types dictionary
     from feature_types import feature_types_dict as f_types    
@@ -27,8 +42,8 @@ def get_ML_inputs(dataset = None,cat = "",):
     
     #create datastructure of relevant inputs to Machine Learning pipeline
     ML_inputs = dict(filename = None,category=cat,samples = None,targets = None,\
-                     sample_groups = None,feature_names = None,feature_types = None)
-    
+                     sample_groups = None,feature_names = None,feature_types = None,\
+                     mask = None)
     
     if dataset is None:
         #read the dataframe from file
@@ -43,7 +58,75 @@ def get_ML_inputs(dataset = None,cat = "",):
     
     while cat not in ["train","test"]:
         cat = raw_input("Indicate 'train' or 'test': ")
+
+
+    #enconde categorical features using one hot encoding
+    print "\nEncoding categorical features"
+    cat_features = ["cat","strand"]
+    df = encode_one_hot(df,cat_features)
+    df = drop_features(df,cat_features)
+
+    # get the final df shape
+    m,n = df.shape # m - number of samples,n - number of features
+
+    # default matrix mask are full range
+    features_mask = np.arange(n)
+    samples_mask = np.arange(m)
+
     
+    feature_names = df.columns.tolist()
+    ML_inputs["feature_names"] = feature_names
+    
+    
+    # identify all features_types present in dataset and removing the ones in drop list
+    print "\nIdentifying present feature types in the dataset"
+    ML_inputs["feature_types"] = {}
+    b_mask = np.ones(n,dtype = bool)
+    for f_type in f_types:
+        id_fun = f_types[f_type]["id_fun"]
+        idx = [i for i in xrange(n) if id_fun(feature_names[i])]
+        if idx:
+            ML_inputs["feature_types"][f_type] = np.array(idx)
+            print "\t{} features of type '{}' are present".format(len(idx),f_type)
+
+            if f_type in feature_types_to_exclude_list:
+                print "\t\tExcluding feature type: '{}'".format(f_type)
+                b_mask[idx] = False
+
+    features_mask = features_mask[b_mask]
+
+    del id_fun,idx,b_mask
+
+
+    #mask individual features to exclude
+    if features_to_exclude_list:
+        # exclude targets column by default
+        features_to_exclude_list["targets"] = None
+        
+        print "\nExcluding columns: {}".format(features_to_exclude_list.keys())
+        features_mask = [i for i in features_mask if (feature_names[i] not in features_to_exclude_list)]
+        #df = drop_features(df,columns_to_drop_list)        
+
+        
+    # preprocess features of specific types
+    print "\nPreprocessing feature type values"
+    for f_type in f_types:
+        if f_type in feature_types_to_exclude_list:
+            continue
+        idx = ML_inputs["feature_types"][f_type]
+        p_fun = f_types[f_type]["preprocess"]
+        if p_fun is not None:
+            print "\tPreprocessing '{}' features".format(f_type)
+            df.iloc[:,idx] = p_fun(df.iloc[:,idx].values,ml_method)
+    del idx,p_fun
+                         
+    #removing all the remaining Nans
+    nan_samples = (df.iloc[:,features_mask].isnull().values.sum(axis = 1) > 0)
+    print "\nExcluding {} samples with NaN entries".format(nan_samples.sum())
+    samples_mask = np.arange(m)[~nan_samples]
+                         #df = df.ix[~nan_samples,:]
+    
+
     # form index arrays for each of the sample groups
     if sample_groups:
         ML_inputs["sample_groups"] = {}
@@ -51,73 +134,29 @@ def get_ML_inputs(dataset = None,cat = "",):
             # get group indices
             if feature in df.columns.tolist():
                 group_sort = {}
-                for group_name in df[feature].unique():
-                    group_sort[group_name] = np.where(df[feature] == group_name)[0]
+                for group_name in df[feature][samples_mask].unique():
+                    group_sort[group_name] = np.where(df[feature][samples_mask] == group_name)[0]
 
                 ML_inputs["sample_groups"][feature] = group_sort
             else:
                 continue
 
-    #enconde categorical features using one hot encoding
-    print "\nEncoding categorical values"
-    cat_features = ["cat","strand"]
-    df = encode_one_hot(df,cat_features)
-    df = drop_features(df,cat_features)
-
-
-    #drop features
-    if features_to_drop_list:
-        print "\nDropping features"
-        df = drop_features(df,columns_to_drop_list)
-                    
-    m,n = df.shape # m is number of samples and n is number of features
-    feature_names = df.columns.tolist()
-
-    
-    # identify all features_types present in dataset
-    
-    ML_inputs["feature_types"] = {}
-
-    for f_type in f_types:
-        print "\n",f_type
-        id_fun = f_types[f_type]["id_fun"]
-        idx = [i for i in xrange(n) if id_fun(feature_names[i])]
-        if idx:
-            ML_inputs["feature_types"][f_type] = np.array(idx) 
-            
-            
-    # preprocess features of specific types
-    print "\nPreprocessing feature values"
-    for f_type in f_types:
-        idx = ML_inputs["feature_types"][f_type]
-        p_fun = f_types[f_type]["preprocess"]
-        if p_fun is not None:
-            print "\tPreprocessing '{}' features".format(f_type)
-            df.iloc[:,idx] = p_fun(df.iloc[:,idx].values)
-
-
-    #removing all the remaining Nans
-    print "\nRemoving samples with NaNs"
-    nan_samples = (df.isnull().values.sum(axis = 1) > 0)
-    print "\tDropping {} samples with NaN entries".format(nan_samples.sum())
-    df = df.ix[~nan_samples,:]
-    print df.isnull().values.sum()
 
     # get target values from the dataset 
     print "\nExtracting target values"
-    targets = df["targets"]
-    df = drop_features(df,["targets"])
-
+    targets = df["targets"].values
+    #df = drop_features(df,["targets"])
+    
     ML_inputs["targets"] = targets
-
-    ML_inputs["feature_names"] = feature_names
     
 
     #Converting dataset to numpy matrix 
     print "\nExctacting feature matrix"
-    samples = df.as_matrix().astype(np.float)
+    samples = df.as_matrix()
 
     ML_inputs["samples"] = samples
+
+    ML_inputs["mask"] = (np.array(samples_mask),np.array(features_mask))
 
     #convert inputs to tuple
     ML_inputs = ML_inputs_tuple(ML_inputs)
@@ -272,7 +311,7 @@ def encode_one_hot(df,cat_features = None):
         f_values = np.unique(df[feature]) 
         print '\n\tThere are {} unique values for "{}" feature.'.format(f_values.shape,feature)
         print "\t",f_values 
-        dummies = pd.get_dummies(df[feature],prefix = feature+"_oh_",drop_first = True)
+        dummies = pd.get_dummies(df[feature],prefix = feature+"_oh_",drop_first = False)
 
         df = pd.concat([df,dummies],axis = 1)
         #df.drop(feature,inplace = True,axis = 1)

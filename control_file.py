@@ -1,6 +1,6 @@
 ### Control file stores all the required lists and parameters for the automatic machine learning pipeline execution
 
-### 1. Select machine learning method to use ###
+### Select machine learning method to use ###
 '''
     valid options:
     "SVM" - Support Vector Machines 
@@ -11,25 +11,32 @@
 
 ml_method = "SVM"
 
-### 2. Specify features to drop ###
-features_to_drop_list = [
-    'brcd',
-    'pos',
-    'gene_name',
-    "rep",
-    "expr",
-    "nread",
-    "mapq",
-    "chrom",
-]
+### Specify feature types to exclude from ML training ###
+feature_types_to_exclude_list = {
+    "chip_c_hb" : None,
+    "chip_c_zb" : None,
+}
+
+### Specify individual features to exclude from ML training ###
+features_to_exclude_list = {
+    'brcd':None,
+    'pos':None,
+    'gene_name':None,
+    "rep":None,
+    "expr":None,
+    "nread":None,
+    "mapq":None,
+    "chrom":None,
+}
 
 
-### 3. Specify sample groups to index by ###
+### Specify sample groups to index by ###
 
 sample_groups = ["chrom"]
 
-### 4. Specify Dataset location ###
+### Specify Dataset location ###
 source = "data/Jurkat_hiv_train_50kb.txt"
 
-### 4. Indicate target feature name ###
+### Indicate target feature name ###
 target = ""
+

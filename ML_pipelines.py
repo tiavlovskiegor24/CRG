@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler,MinMaxScaler,minmax_scale
 #from sklearn.linear_model import LogisticRegression
 from sklearn import svm
 from sklearn.model_selection import GridSearchCV
-#from sklearn import metrics
+from sklearn.metrics import classification_report
 from sklearn.pipeline import make_pipeline
 from time import time
 #from sklearn.decomposition import PCA, KernelPCA
@@ -23,6 +23,7 @@ def RF_pipeline(X,y,parameters = None,**kwargs):
     clf = RandomForestClassifier(**kwargs)
     if parameters is None:
         parameters = {"max_features":(5,"auto",20),"min_samples_split":(2,10,50,100)}
+    
     clf = grid_search(clf,X,y,parameters)
     #best_params["n_estimators"] = 30
 
@@ -35,6 +36,8 @@ def RF_pipeline(X,y,parameters = None,**kwargs):
     #print scores
     print("\tAccuracy (mean +/- 2*sd): %0.2f (+/- %0.2f)" % (scores.mean(), \
                                            scores.std() * 2))
+    clf
+    print(classification_report(y, y_pred, target_names=target_names))
 
     return clf
 
@@ -78,29 +81,35 @@ def grid_search(clf,X,y,parameters,cv=10):
     return clf
 
 
-def run_ML(ML_inputs,estimator = SVM_pipeline,by_groups = None,**kwargs):
+def run_ML(ML_inputs,estimator = RF_pipeline,by_groups = None,**kwargs):
+
+    X,y = ML_inputs.get_data()
+
+    print np.isfinite(X.sum())
+    print np.isfinite(y.sum())
 
     if by_groups is None:
-        X = ML_inputs["features"]
-        y = ML_inputs["targets"]
         print "Running ML..."
         return  estimator(X,y,**kwargs)
     else:
         
-        while by_groups not in ML_inputs["groups"]:
+        while by_groups not in ML_inputs["sample_groups"]:
             by_group = raw_input("Select group from:\n {}\n or enter 'c' to CANCEL: "\
-                              .format(ML_inputs["groups"].keys()))
+                              .format(ML_inputs["sample_groups"].keys()))
             if by_groups == "c":
                 print "Cancelled"
                 return None
 
         group_clfs = {}
-        for name,idx in ML_inputs["groups"][by_groups].iteritems():
+        for name,idx in ML_inputs["sample_groups"][by_groups].iteritems():
             print "\nRunning ML for '{g}' = '{n}'".format(g = by_groups,n = name)
-            X = ML_inputs["features"][idx]
-            y = ML_inputs["targets"][idx]
-            print "Group data set has {} samples".format(y.shape[0])
-            group_clfs[name] = estimator(X,y,**kwargs)
-        
+            X_group = X[idx]
+            y_group = y[idx]
+            m = y_group.shape[0]
+            print "Group data set has {} samples".format(m)
+            if m < 10:
+                continue
+            group_clfs[name] = estimator(X_group,y_group,**kwargs)
+            
         return group_clfs
     
