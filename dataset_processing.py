@@ -32,9 +32,10 @@ class ML_inputs_tuple(object):
         return self.data.__repr__()
 
 
+    
 def get_ML_inputs(dataset = None,cat = "",):
     # importing pipeline controls
-    from control_file import ml_method, feature_types_to_exclude_list, features_to_exclude_list, sample_groups, source
+    from control_file import ml_method,feature_types_to_exclude_list, features_to_exclude_list, sample_groups, source, get_targets
 
     # importing feature types dictionary
     from feature_types import feature_types_dict as f_types    
@@ -47,8 +48,8 @@ def get_ML_inputs(dataset = None,cat = "",):
     
     if dataset is None:
         #read the dataframe from file
-        df = pd.read_table(source,comment = "#")
-        ML_inputs["filename"] = source    
+        df = pd.read_table(source.format(cat),comment = "#")
+        ML_inputs["filename"] = source.format(cat)    
     elif isinstance(dataset,pd.DataFrame):
         df = source
     else:
@@ -61,7 +62,7 @@ def get_ML_inputs(dataset = None,cat = "",):
 
 
     #enconde categorical features using one hot encoding
-    print "\nEncoding categorical features"
+    print "\n\nEncoding categorical features"
     cat_features = ["cat","strand"]
     df = encode_one_hot(df,cat_features)
     df = drop_features(df,cat_features)
@@ -79,7 +80,7 @@ def get_ML_inputs(dataset = None,cat = "",):
     
     
     # identify all features_types present in dataset and removing the ones in drop list
-    print "\nIdentifying present feature types in the dataset"
+    print "\n\nIdentifying present feature types in the dataset"
     ML_inputs["feature_types"] = {}
     b_mask = np.ones(n,dtype = bool)
     for f_type in f_types:
@@ -87,12 +88,13 @@ def get_ML_inputs(dataset = None,cat = "",):
         idx = [i for i in xrange(n) if id_fun(feature_names[i])]
         if idx:
             ML_inputs["feature_types"][f_type] = np.array(idx)
-            print "\t{} features of type '{}' are present".format(len(idx),f_type)
+            print "\n\t{} features of type '{}' are present".format(len(idx),f_type)
 
             if f_type in feature_types_to_exclude_list:
                 print "\t\tExcluding feature type: '{}'".format(f_type)
                 b_mask[idx] = False
 
+    # update feature mask
     features_mask = features_mask[b_mask]
 
     del id_fun,idx,b_mask
@@ -101,15 +103,14 @@ def get_ML_inputs(dataset = None,cat = "",):
     #mask individual features to exclude
     if features_to_exclude_list:
         # exclude targets column by default
-        features_to_exclude_list["targets"] = None
+        #features_to_exclude_list["targets"] = None
         
-        print "\nExcluding columns: {}".format(features_to_exclude_list.keys())
+        print "\n\nExcluding columns:\n{}".format(features_to_exclude_list.keys())
         features_mask = [i for i in features_mask if (feature_names[i] not in features_to_exclude_list)]
-        #df = drop_features(df,columns_to_drop_list)        
-
         
+
     # preprocess features of specific types
-    print "\nPreprocessing feature type values"
+    print "\n\nPreprocessing feature type values"
     for f_type in f_types:
         if f_type in feature_types_to_exclude_list:
             continue
@@ -122,9 +123,8 @@ def get_ML_inputs(dataset = None,cat = "",):
                          
     #removing all the remaining Nans
     nan_samples = (df.iloc[:,features_mask].isnull().values.sum(axis = 1) > 0)
-    print "\nExcluding {} samples with NaN entries".format(nan_samples.sum())
+    print "\n\nExcluding {} samples with NaN entries".format(nan_samples.sum())
     samples_mask = np.arange(m)[~nan_samples]
-                         #df = df.ix[~nan_samples,:]
     
 
     # form index arrays for each of the sample groups
@@ -143,15 +143,14 @@ def get_ML_inputs(dataset = None,cat = "",):
 
 
     # get target values from the dataset 
-    print "\nExtracting target values"
-    targets = df["targets"].values
-    #df = drop_features(df,["targets"])
+    print "\n\nExtracting target values"
+    targets = get_targets(df)
     
     ML_inputs["targets"] = targets
     
 
     #Converting dataset to numpy matrix 
-    print "\nExctacting feature matrix"
+    print "\n\nExctacting feature matrix"
     samples = df.as_matrix()
 
     ML_inputs["samples"] = samples
@@ -180,10 +179,10 @@ def create_full_dataset(filename,train_test = True):
     df = import_features(df,resolution,directory,feature_filenames)    
 
     # get target values from the dataset
-    print "\nForming target values"
-    y = get_target_values(df)
-    df = drop_features(df,["RNA","DNA"])
-    df["targets"] = y
+    #print "\nForming target values"
+    #y = get_target_values(df)
+    #df = drop_features(df,["RNA","DNA"])
+    #df["targets"] = y
     
     # get chromosome indices
     chrom_sort = {}
@@ -195,6 +194,7 @@ def create_full_dataset(filename,train_test = True):
     if train_test:
         #split in train and test uniformly from each chromosome
         print "\nSpliting into train and test and saving the datasets"
+        
         train_idx,test_idx = train_test_split(df,0.9,chrom_sort)
         for name,idx in zip(["train","test"],[train_idx,test_idx]):
 
@@ -270,26 +270,6 @@ def drop_features(df_modified,columns_to_drop=None):
     return df_modified
 
     
-def get_target_values(df_modified,binary = True):
-    # currently target values are asumed
-    exp_ratio = df_modified["RNA"]*1.0/df_modified["DNA"]
-    
-    if binary:
-        threshold = 3
-        target = np.where(exp_ratio.values > threshold,1.,0.)
-        
-        y = target.reshape(-1,).astype(np.float)
-        #y = np.array(df_modified["pos_expr"].tolist()).reshape(-1,)\
-                         #                         .astype(np.float)
-        print "Binary label split: %.2f"%(y.sum()/y.shape)[0]
-        #print y.shape
-
-    else:
-        y = exp_ratio
-        
-    #df_modified.drop(["RNA","DNA"], inplace=True, axis = 1)
-    
-    return y
 
 
 def load_feature_names(filename):
@@ -314,36 +294,7 @@ def encode_one_hot(df,cat_features = None):
         dummies = pd.get_dummies(df[feature],prefix = feature+"_oh_",drop_first = False)
 
         df = pd.concat([df,dummies],axis = 1)
-        #df.drop(feature,inplace = True,axis = 1)
 
-    '''
-    # category of the intergration site
-    feature = "cat"
-    print 'There are ' + str(np.unique(df[feature]).shape[0]) \
-        +' unique values for "%s" feature.\n'%feature
-    print np.unique(df[feature])
-    dummies = pd.get_dummies(df[feature])
-
-    #print "Unique",dummies.sum(axis = 1).unique()
-    dummies.drop("IN",inplace = True,axis = 1)
-    df_modified = pd.concat([df,dummies],axis = 1)
-
-    # strand of the integrations site
-    feature = "strand"
-    print 'There are ' + str(np.unique(df[feature]).shape[0]) \
-        +' unique values for "%s" feature.\n'%feature
-    print np.unique(df[feature])
-    dummies = pd.get_dummies(df[feature])
-
-    #print "Unique",dummies.sum(axis = 1).unique()
-    dummies.drop("-",inplace = True,axis = 1)
-    dummies.columns = ["Stand +"]
-    df_modified = pd.concat([df_modified,dummies],axis = 1)
-
-    # integration site in gene
-    df_modified["in_gene"] = np.where(pd.isnull(df_modified["gene_name"])\
-                                      ,0.,1.)
-    '''
     return df
 
 

@@ -40,10 +40,12 @@ CLOSED: [2017-03-13 Mon 16:01]
 **** DONE Consider not dropping rows and columns of dataset for ML_inputs but creating masks
 CLOSED: [2017-03-13 Mon 14:25] SCHEDULED: <2017-03-13 Mon>
 *** Tue 14 
+**** DONE Move target values selection and processing to control file
+CLOSED: [2017-03-14 Tue 14:01]
 **** TODO Generate classification report for predictions on test dataset using best param classifier :bhive:ml_pipeline:
-SCHEDULED: <2017-03-14 Tue 14:00>
+SCHEDULED: <2017-03-15 Wed 12:00>
 **** TODO Include preprocessing functions for feature types in [[file:feature_types.py][feature_types]] :bhive:features:ds_processing:
-SCHEDULED: <2017-03-14 Tue 15:00>
+SCHEDULED: <2017-03-15 Wed 13:00>
 ***** TODO Chip-c features
 ***** TODO GMFPT
 ***** TODO Row sum
@@ -51,7 +53,6 @@ SCHEDULED: <2017-03-14 Tue 15:00>
 ***** TODO AB-score
 **** TODO Create Adaboost pipeline                     :bhive:ml_pipeline:
 **** TODO Add gradient boosting to ML_pipeline
-**** TODO Move target values selection and processing to control file
 
 **** TODO Moving the scalling of features to the DS preprocessing stage :bhive:ds_processing:ml_inputs:
 move the issue to the feature_type processing [[file:feature_types.py][rules]] 
@@ -60,6 +61,9 @@ For example check for present feature_types by looking through dataset column na
 checking "_? _" segments of the name the feature type id look up table
 **** TODO Include categorical feature type into [[file:feature_types.py][our feature dictionary]]
 **** TODO Swithc back to regression on expression level
+**** TODO Consider using boolean masks for ML_inputs     :bhive:ml_inputs:
+SCHEDULED: <2017-03-15 Wed 13:00>
+**** TODO Consider maskig categorical features instead of [[file:dataset_processing.py::68][dropping]] them:bhive:ml_inputs:
 * BHIVE (archive)** Analysis
 *** HIV expression prediciton
 **** Run SVMs

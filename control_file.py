@@ -15,10 +15,12 @@ ml_method = "SVM"
 feature_types_to_exclude_list = {
     "chip_c_hb" : None,
     "chip_c_zb" : None,
+    "categorical": None,
 }
 
 ### Specify individual features to exclude from ML training ###
 features_to_exclude_list = {
+    # list of certain features to exlude
     'brcd':None,
     'pos':None,
     'gene_name':None,
@@ -27,6 +29,13 @@ features_to_exclude_list = {
     "nread":None,
     "mapq":None,
     "chrom":None,
+    "RNA":None,
+    "DNA":None,
+
+    # possible features remaining from older versions of datasets 
+    "pos_expr":None,
+    "targets":None,
+    
 }
 
 
@@ -35,8 +44,32 @@ features_to_exclude_list = {
 sample_groups = ["chrom"]
 
 ### Specify Dataset location ###
-source = "data/Jurkat_hiv_train_50kb.txt"
+source = "data/Jurkat_hiv_{}_50kb.txt"
 
-### Indicate target feature name ###
-target = ""
+
+### Indicate target feature selection and preprocessing routine ###
+
+def get_targets(dataset):
+    import numpy as np
+    # currently target values are assumed
+    exp_ratio = (dataset["RNA"]*1.0/dataset["DNA"]).values
+
+    # choose if 
+    binary = False
+    if binary:
+        threshold = 3
+        targets = np.where(exp_ratio.values > threshold,1.,0.)
+        
+        y = targets.reshape(-1,1).astype(np.float)
+    
+        print "\tBinary label split: %.2f"%(y.sum()/y.shape)[0]
+        #print y.shape
+
+    else:
+        y = np.log1p(exp_ratio).reshape(-1,1)
+    
+    return y
+    
+
+
 

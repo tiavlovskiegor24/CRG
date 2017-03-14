@@ -24,11 +24,7 @@ def distance_preprocessing(array,ml_method = None):
         array = np.log1p(array)
         
     return array
-
     
-    
-
-
 
 ### 3. Add the feature type entry to the dictionary below with the following default format ###
 
@@ -158,7 +154,7 @@ feature_types_dict = {
         
         "file_format" : "", 
        
-        "about" : "categorical feature", 
+        "about" : "categorical features", 
         
     },
     
