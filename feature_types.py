@@ -3,14 +3,12 @@
 
 ### FOLLOW THE STEPS BELOW
 
-### 1. Import the relevant modules for preprocessing ###
-import numpy as np
 
-
-
-### 2. Include definitions of preprocessing functions if necessary ###
+### 1. Include definitions of preprocessing functions if necessary ###
 
 def distance_preprocessing(array,ml_method = None):
+
+    import numpy as np
     # assuming feature values are stored as columns
 
     #Nan handling
@@ -19,11 +17,70 @@ def distance_preprocessing(array,ml_method = None):
     print "\tMax value in the data {}".format(max_value)
     array = np.where(np.isnan(array),max_value*10,array)
 
-    if ml_method == "SVM":
+    if ml_method not in ["RF"]:
         print "\tApplying log1p to distance values"
         array = np.log1p(array)
         
     return array
+
+
+def gmfpt_preprocessing(array,ml_method = None):
+    import numpy as np
+    
+    #Nan handling
+    #Nans typically lie in non-reachable region and thus it is better to remove this samples
+    #Leave Nans and get_ML_inputs will take care of them
+
+    if ml_method not in []:
+        print "\tApplying log1p to 'gmfpt' values"
+        array = np.log1p(array)
+        '''
+        print "\tRemoving top and bottom .1 percent of samples"
+        upper = np.percentile(array,99.9)
+        lower = np.percentile(array,.1)
+        array = np.where((array >= lower) & (array <= upper),array,np.nan)
+        '''
+
+        print "\tRescaling 'gmfpt' to 0-1 range"
+        array = (array-np.nanmin(array,axis = 0,keepdims = True))\
+                /(np.nanmax(array,axis = 0,keepdims = True)-np.nanmin(array,axis = 0,keepdims = True))
+
+    return array
+
+
+### row sum feature ####
+def row_sum_preprocessing(array,ml_method):
+    import numpy as np
+    #Nan handling
+    #Nans typically lie in non-reachable region and thus it is better to remove this samples
+    #Leave Nans and get_ML_inputs will take care of them
+
+    if ml_method not in []:
+        print "\tApplying log1p to 'row_sum' values"
+        array = np.log1p(array)
+
+        print "\tRemoving top and bottom 1 percent of samples"
+        upper = np.percentile(array,99)
+        lower = np.percentile(array,1)
+        array = np.where((array >= lower) & (array <= upper),array,np.nan)
+
+        print "\tRescaling 'row_sum' to 0-1 range"
+        array = (array-np.nanmin(array,axis = 0,keepdims = True))\
+                /(np.nanmax(array,axis = 0,keepdims = True)-np.nanmin(array,axis = 0,keepdims = True))
+
+    return array
+
+row_sum = {
+
+    "id_fun":(lambda x: True if (x.find("row_sum") > -1) else False),
+
+    "preprocess" : row_sum_preprocessing, 
+    
+    "file_format" : "bed file", 
+       
+    "about" : "sum of Hi-C elements row wise", 
+}
+
     
 
 ### 3. Add the feature type entry to the dictionary below with the following default format ###
@@ -67,7 +124,7 @@ feature_types_dict = {
         "id_fun":(lambda x: True if (x.find("gmfpt") > -1) else False), # function that takes \
         #the string name of the feature and return True if feature belongs to this feature type
 
-        "preprocess":None, # include list of \
+        "preprocess":gmfpt_preprocessing, # include list of \
         #preprocessing functions [fun1,fun2,...] to be applied on the feature values
 
         "file_format":"tab separated bed file with in .txt format", # details of the \
@@ -157,6 +214,10 @@ feature_types_dict = {
         "about" : "categorical features", 
         
     },
+
+    
+    #row_sum feature
+    "row_sum" : row_sum,
     
     
 }

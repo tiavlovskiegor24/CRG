@@ -117,7 +117,7 @@ def get_ML_inputs(dataset = None,cat = "",):
         idx = ML_inputs["feature_types"][f_type]
         p_fun = f_types[f_type]["preprocess"]
         if p_fun is not None:
-            print "\tPreprocessing '{}' features".format(f_type)
+            print "\n\tPreprocessing '{}' features".format(f_type)
             df.iloc[:,idx] = p_fun(df.iloc[:,idx].values,ml_method)
     del idx,p_fun
                          
