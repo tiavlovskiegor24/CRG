@@ -34,12 +34,13 @@ def gmfpt_preprocessing(array,ml_method = None):
     if ml_method not in []:
         print "\tApplying log1p to 'gmfpt' values"
         array = np.log1p(array)
-        '''
-        print "\tRemoving top and bottom .1 percent of samples"
-        upper = np.percentile(array,99.9)
-        lower = np.percentile(array,.1)
+
+        # removing outliers at the tails
+        percent = 1.
+        print "\tRemoving top and bottom {}%% percent of samples".format(percent)
+        upper = np.nanpercentile(array,100-percent)
+        lower = np.nanpercentile(array,percent)
         array = np.where((array >= lower) & (array <= upper),array,np.nan)
-        '''
 
         print "\tRescaling 'gmfpt' to 0-1 range"
         array = (array-np.nanmin(array,axis = 0,keepdims = True))\
@@ -56,12 +57,15 @@ def row_sum_preprocessing(array,ml_method):
     #Leave Nans and get_ML_inputs will take care of them
 
     if ml_method not in []:
+
         print "\tApplying log1p to 'row_sum' values"
         array = np.log1p(array)
 
-        print "\tRemoving top and bottom 1 percent of samples"
-        upper = np.percentile(array,99)
-        lower = np.percentile(array,1)
+        # removing outliers at the tails
+        percent = 1.
+        print "\tRemoving top and bottom {}%% percent of samples".format(percent)
+        upper = np.nanpercentile(array,100-percent)
+        lower = np.nanpercentile(array,percent)
         array = np.where((array >= lower) & (array <= upper),array,np.nan)
 
         print "\tRescaling 'row_sum' to 0-1 range"
