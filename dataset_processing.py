@@ -60,9 +60,12 @@ def get_ML_inputs(dataset = None,cat = "",):
     while cat not in ["train","test"]:
         cat = raw_input("Indicate 'train' or 'test': ")
 
+    # Track the steps of the routine
+    step_tracker = 0
 
     #enconde categorical features using one hot encoding
-    print "\n\nEncoding categorical features"
+    step_tracker += 1
+    print "\n\n{}. Encoding categorical features".format(step_tracker)
     cat_features = ["cat","strand"]
     df = encode_one_hot(df,cat_features)
     df = drop_features(df,cat_features)
@@ -76,11 +79,12 @@ def get_ML_inputs(dataset = None,cat = "",):
 
     
     feature_names = df.columns.tolist()
-    ML_inputs["feature_names"] = feature_names
+    ML_inputs["feature_names"] = np.array(feature_names,dtype=str)
     
     
     # identify all features_types present in dataset and removing the ones in drop list
-    print "\n\nIdentifying present feature types in the dataset"
+    step_tracker += 1
+    print "\n\n{}. Identifying present feature types in the dataset".format(step_tracker)
     ML_inputs["feature_types"] = {}
     b_mask = np.ones(n,dtype = bool)
     for f_type in f_types:
@@ -101,16 +105,18 @@ def get_ML_inputs(dataset = None,cat = "",):
 
 
     #mask individual features to exclude
+    step_tracker += 1
     if features_to_exclude_list:
         # exclude targets column by default
         #features_to_exclude_list["targets"] = None
         
-        print "\n\nExcluding columns:\n{}".format(features_to_exclude_list.keys())
+        print "\n\n{}. Excluding individual features:\n{}".format(step_tracker,features_to_exclude_list.keys())
         features_mask = [i for i in features_mask if (feature_names[i] not in features_to_exclude_list)]
         
 
     # preprocess features of specific types
-    print "\n\nPreprocessing feature type values"
+    step_tracker += 1
+    print "\n\n{}. Preprocessing feature type values".format(step_tracker)
     for f_type in f_types:
         if f_type in feature_types_to_exclude_list:
             continue
@@ -119,11 +125,27 @@ def get_ML_inputs(dataset = None,cat = "",):
         if p_fun is not None:
             print "\n\tPreprocessing '{}' features".format(f_type)
             df.iloc[:,idx] = p_fun(df.iloc[:,idx].values,ml_method)
-    del idx,p_fun
+            nan_samples = np.sum(np.isnan(df.iloc[:,idx].values),axis = 1).sum()
+            print "\t{} samples remaining with Nan values for '{}' features".format(nan_samples,f_type)
+    del idx,p_fun,nan_samples
+
+
+    # get target values from the dataset
+    step_tracker += 1
+    print "\n\n{}. Extracting target values".format(step_tracker)
+    targets = get_targets(df)
+    nan_targets = np.isnan(targets).ravel()
+    print "\t{} targets remaining with Nan values".format(nan_targets.sum(),f_type)
+    
+    ML_inputs["targets"] = targets
+
+    
                          
     #removing all the remaining Nans
-    nan_samples = (df.iloc[:,features_mask].isnull().values.sum(axis = 1) > 0)
-    print "\n\nExcluding {} samples with NaN entries".format(nan_samples.sum())
+    step_tracker += 1
+    nan_samples = (df.iloc[:,features_mask].isnull().values.sum(axis = 1) > 0).ravel()
+    nan_samples = np.logical_or(nan_samples,nan_targets)
+    print "\n\n{}. Excluding total of {} samples with NaN entries".format(step_tracker,nan_samples.sum())
     samples_mask = np.arange(m)[~nan_samples]
     
 
@@ -140,17 +162,11 @@ def get_ML_inputs(dataset = None,cat = "",):
                 ML_inputs["sample_groups"][feature] = group_sort
             else:
                 continue
-
-
-    # get target values from the dataset 
-    print "\n\nExtracting target values"
-    targets = get_targets(df)
-    
-    ML_inputs["targets"] = targets
     
 
-    #Converting dataset to numpy matrix 
-    print "\n\nExctacting feature matrix"
+    #Converting dataset to numpy matrix
+    step_tracker += 1
+    print "\n\n{}. Exctacting feature matrix".format(step_tracker)
     samples = df.as_matrix()
 
     ML_inputs["samples"] = samples
@@ -172,7 +188,7 @@ def create_full_dataset(filename,train_test = True):
     print "\nImporting features from files"
     resolution = "50kb"# select from "10kb","50kb","100kb" and "500kb"
     directory = "/mnt/shared/data/HiC_processing/"
-    feature_filenames = {"c_decay":"contacts_decay_Jurkat_",\
+    feature_filenames = {"contact_decay":"contacts_decay_Jurkat_",\
                          "gmfpt":"gmfpt_feature_Jurkat_",\
                          "row_sum":"row_sum_Jurkat_"}
     

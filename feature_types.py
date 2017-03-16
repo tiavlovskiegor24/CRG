@@ -6,8 +6,14 @@
 
 ### 1. Include definitions of preprocessing functions if necessary ###
 
-def distance_preprocessing(array,ml_method = None):
 
+
+def distance_preprocessing(array,ml_method = None,skip = False):
+
+    if skip:
+        print "\tSkipping the preprocessing of 'distance' features"
+        return array
+    
     import numpy as np
     # assuming feature values are stored as columns
 
@@ -20,9 +26,16 @@ def distance_preprocessing(array,ml_method = None):
     if ml_method not in ["RF"]:
         print "\tApplying log1p to distance values"
         array = np.log1p(array)
+
+        print "\tRescaling 'distance' features to 0-1 range"
+        array = (array-np.nanmin(array,axis = 0,keepdims = True))\
+                /(np.nanmax(array,axis = 0,keepdims = True)-np.nanmin(array,axis = 0,keepdims = True))
+
         
     return array
 
+
+########################### Hi-C features ########################################################
 
 def gmfpt_preprocessing(array,ml_method = None):
     import numpy as np
@@ -37,16 +50,68 @@ def gmfpt_preprocessing(array,ml_method = None):
 
         # removing outliers at the tails
         percent = 1.
-        print "\tRemoving top and bottom {}%% percent of samples".format(percent)
-        upper = np.nanpercentile(array,100-percent)
-        lower = np.nanpercentile(array,percent)
-        array = np.where((array >= lower) & (array <= upper),array,np.nan)
+        print "\tRemoving top and bottom {}% percent of samples".format(percent)
+        upper = np.nanpercentile(array,100-percent,axis = 0,keepdims = True)
+        lower = np.nanpercentile(array,percent,axis = 0,keepdims = True)
+        nan_mask = np.where(~np.isnan(array))
+        array[nan_mask] = np.where(
+            np.greater_equal(array[nan_mask],lower) &\
+            np.less_equal(array[nan_mask],upper)
+            ,array[nan_mask],np.nan)
 
         print "\tRescaling 'gmfpt' to 0-1 range"
         array = (array-np.nanmin(array,axis = 0,keepdims = True))\
                 /(np.nanmax(array,axis = 0,keepdims = True)-np.nanmin(array,axis = 0,keepdims = True))
 
     return array
+
+
+
+### contact decay feature ####
+def contact_decay_preprocessing(array,ml_method,skip = False):
+
+    if skip:
+        print "\tSkipping the preprocessing of 'contact_decay' features"
+        return array
+
+    
+    import numpy as np
+
+    #Nan handling
+    #Nans typically lie in non-reachable region and thus it is better to remove this samples
+    #Leave Nans and get_ML_inputs will take care of them
+ 
+    if ml_method not in []:
+        # removing outliers at the tails
+        percent = 1.
+        print "\tRemoving top and bottom {}% percent of samples".format(percent)
+        upper = np.nanpercentile(array,100-percent,axis = 0,keepdims = True)
+        lower = np.nanpercentile(array,percent,axis = 0,keepdims = True)
+        nan_mask = np.where(~np.isnan(array))
+        array[nan_mask] = np.where(
+            np.greater_equal(array[nan_mask],lower) &\
+            np.less_equal(array[nan_mask],upper)
+            ,array[nan_mask],np.nan)
+
+        print "\tRescaling 'contact_decay' to 0-1 range"
+        array = (array-np.nanmin(array,axis = 0,keepdims = True))\
+                /(np.nanmax(array,axis = 0,keepdims = True)-np.nanmin(array,axis = 0,keepdims = True))
+
+
+    return array
+
+contact_decay = {
+
+    "id_fun":(lambda x: True if (x.find("c_decay") > -1) or \
+              (x.find("contact_decay") > -1)  else False),
+
+    "preprocess" : contact_decay_preprocessing, 
+    
+    "file_format" : "bed file", 
+       
+    "about" : "exponential decay constant of the contact counts for each locus", 
+
+}
 
 
 ### row sum feature ####
@@ -63,10 +128,14 @@ def row_sum_preprocessing(array,ml_method):
 
         # removing outliers at the tails
         percent = 1.
-        print "\tRemoving top and bottom {}%% percent of samples".format(percent)
-        upper = np.nanpercentile(array,100-percent)
-        lower = np.nanpercentile(array,percent)
-        array = np.where((array >= lower) & (array <= upper),array,np.nan)
+        print "\tRemoving top and bottom {}% percent of samples".format(percent)
+        upper = np.nanpercentile(array,100-percent,axis = 0,keepdims = True)
+        lower = np.nanpercentile(array,percent,axis = 0,keepdims = True)
+        nan_mask = np.where(~np.isnan(array))
+        array[nan_mask] = np.where(
+            np.greater_equal(array[nan_mask],lower) &\
+            np.less_equal(array[nan_mask],upper)
+            ,array[nan_mask],np.nan)        
 
         print "\tRescaling 'row_sum' to 0-1 range"
         array = (array-np.nanmin(array,axis = 0,keepdims = True))\
@@ -84,6 +153,90 @@ row_sum = {
        
     "about" : "sum of Hi-C elements row wise", 
 }
+
+
+def intra_inter_ratio_preprocessing(array,ml_method,skip = False):
+
+    if skip:
+        print "\tSkipping the preprocessing of 'intra_inter_ratio' features"
+        return array
+
+    
+    import numpy as np
+
+    #Nan handling
+    #Nans typically lie in non-reachable region and thus it is better to remove this samples
+    #Leave Nans and get_ML_inputs will take care of them
+ 
+    if ml_method not in []:
+        # removing outliers at the tails
+        percent = 1.
+        print "\tRemoving top and bottom {}% percent of samples".format(percent)
+        upper = np.nanpercentile(array,100-percent,axis = 0,keepdims = True)
+        lower = np.nanpercentile(array,percent,axis = 0,keepdims = True)
+        nan_mask = np.where(~np.isnan(array))
+        array[nan_mask] = np.where(
+            np.greater_equal(array[nan_mask],lower) &\
+            np.less_equal(array[nan_mask],upper)
+            ,array[nan_mask],np.nan)
+
+        print "\tRescaling 'intra_inter_ratio' to 0-1 range"
+        array = (array-np.nanmin(array,axis = 0,keepdims = True))\
+                /(np.nanmax(array,axis = 0,keepdims = True)-np.nanmin(array,axis = 0,keepdims = True))
+
+
+    return array
+
+intra_inter_ratio = {
+
+    "id_fun":(lambda x: True if (x.find("intra_inter_ratio") > -1) else False),
+
+    "preprocess" : intra_inter_ratio_preprocessing, 
+    
+    "file_format" : "bed file", 
+       
+    "about" : "ratio of intra to inter contacts of Hi-C data", 
+
+}
+
+
+### ab_score ######
+
+def ab_score_preprocessing(array,ml_method,skip = False):
+
+    if skip:
+        print "\tSkipping the preprocessing of 'ab_score' features"
+        return array
+
+    
+    import numpy as np
+
+    #Nan handling
+    #Nans typically lie in non-reachable region and thus it is better to remove this samples
+    #Leave Nans and get_ML_inputs will take care of them
+ 
+    if ml_method not in []:
+
+        print "\tRescaling 'ab_score' to 0-1 range"
+        array = (array+100)/200.
+                
+
+
+    return array
+
+ab_score = {
+
+    "id_fun":(lambda x: True if (x.find("ab_score") > -1) else False),
+
+    "preprocess" : ab_score_preprocessing, 
+    
+    "file_format" : "bed file", 
+       
+    "about" : "ab_score of each locus computed by Eduard", 
+
+}
+
+
 
     
 
@@ -103,6 +256,7 @@ row_sum = {
         "about":"...", # short description of the feature type
     }, # don't forget a comma at the end of the entry
 '''
+
 
 
 
@@ -222,6 +376,15 @@ feature_types_dict = {
     
     #row_sum feature
     "row_sum" : row_sum,
+
+    #contact decay featue
+    "contact_decay" : contact_decay,
+
+    #intra inter ratio feature
+     "intra_inter_ratio" : intra_inter_ratio,
+
+    #ab_score
+    "ab_score" : ab_score,
     
     
 }

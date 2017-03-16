@@ -14,7 +14,7 @@ ml_method = "SVM"
 ### Specify feature types to exclude from ML training ###
 feature_types_to_exclude_list = {
     "chip_c_hb" : None,
-    "chip_c_zb" : None,
+    #"chip_c_zb" : None,
     "categorical": None,
 }
 
@@ -52,23 +52,30 @@ source = "data/Jurkat_hiv_{}_50kb.txt"
 def get_targets(dataset):
     import numpy as np
     # currently target values are assumed
+    print "\tComputing the RNA/DNA expression ratio as our target values"
     exp_ratio = (dataset["RNA"]*1.0/dataset["DNA"]).values
 
     # choose if 
     binary = False
     if binary:
         threshold = 3
-        targets = np.where(exp_ratio.values > threshold,1.,0.)
-        
-        y = targets.reshape(-1,1).astype(np.float)
+        print "\tTransforming the problem into binary classification"
+        print "\tSetting targets with expression ratio >= {} to 1, else 0".format(threshold)
+        array = np.where(exp_ratio.values >= threshold,1.,0.).reshape(-1,1).astype(np.float)
     
-        print "\tBinary label split: %.2f"%(y.sum()/y.shape)[0]
+        print "\tBinary label split: %.2f"%(array.sum()/array.shape)[0]
         #print y.shape
 
     else:
-        y = np.log1p(exp_ratio).reshape(-1,1)
-    
-    return y
+        print "Problem is a regression with targets on a continuous scale"
+        print "\tTaking the log of targets (expression ratio)"
+        array = np.log1p(exp_ratio).reshape(-1,1)
+
+        print "\tRescaling the targets to 0-1 range"
+        array = (array-np.nanmin(array,axis = 0,keepdims = True))\
+                /(np.nanmax(array,axis = 0,keepdims = True)-np.nanmin(array,axis = 0,keepdims = True))
+        
+    return array
     
 
 

@@ -46,16 +46,33 @@ CLOSED: [2017-03-14 Tue 14:01]
 SCHEDULED: <2017-03-15 Wed 12:00>
 **** TODO Include preprocessing functions for feature types in [[file:feature_types.py][feature_types]] :bhive:features:ds_processing:
 SCHEDULED: <2017-03-15 Wed 13:00>
-***** TODO Chip-c features
-****** TODO GMFPT
+***** DONE Hi-c features
+CLOSED: [2017-03-16 Thu 16:56]
+****** DONE GMFPT
+CLOSED: [2017-03-16 Thu 15:44]
 ****** DONE Row sum
 CLOSED: [2017-03-15 Wed 17:10]
-****** TODO contact decay
-****** TODO AB-score
+****** DONE contact decay
+CLOSED: [2017-03-16 Thu 16:00]
+****** DONE AB-score
+CLOSED: [2017-03-16 Thu 16:55]
+****** DONE Intra-inter_ratio
+CLOSED: [2017-03-16 Thu 16:41]
+***** TODO Chip-c features
+****** TODO zb_r
+SCHEDULED: <2017-03-17 Fri 14:00>
+first take the max value from [[file:~/CRG/Datasets/Jurkat_gws_50kb.txt][this set]] and hiv combined and scale with this one
+****** DONE hb_r
+CLOSED: [2017-03-16 Thu 17:26]
+no processing required for this feature
+***** TODO Display how many samples are Nan (excluded for each feature type)
+**** DONE Count how many nan targets are present and add them to samples mask
+CLOSED: [2017-03-16 Thu 18:05]
 **** TODO Create Adaboost pipeline                     :bhive:ml_pipeline:
 **** TODO Add gradient boosting to ML_pipeline
-
-**** TODO Moving the scalling of features to the DS preprocessing stage :bhive:ds_processing:ml_inputs:
+SCHEDULED: <2017-03-20 Mon>
+**** DONE Moving the scalling of features to the DS preprocessing stage :bhive:ds_processing:ml_inputs:
+CLOSED: [2017-03-16 Thu 18:12]
 move the issue to the feature_type processing [[file:feature_types.py][rules]] 
 **** TODO Consider changing the present feature type mapping in dataset :ds_processing:
 For example check for present feature_types by looking through dataset column names and
@@ -64,9 +81,16 @@ checking "_? _" segments of the name the feature type id look up table
 **** TODO Swithc back to regression on expression level
 **** TODO Consider using boolean masks for ML_inputs     :bhive:ml_inputs:
 SCHEDULED: <2017-03-15 Wed 13:00>
-**** TODO Consider maskig categorical features instead of [[file:dataset_processing.py::68][dropping]] them:bhive:ml_inputs:
-
-
+**** DONE Consider maskig categorical features instead of [[file:dataset_processing.py::68][dropping]] them:bhive:ml_inputs:
+CLOSED: [2017-03-16 Thu 18:16]
+**** TODO List non processed and/or non-removed features
+SCHEDULED: <2017-03-16 Thu 16:30>
+**** DONE Rescale distance features to 0-1
+CLOSED: [2017-03-16 Thu 16:56]
+**** DONE Scale target values to 0-1
+CLOSED: [2017-03-16 Thu 18:08]
+**** TODO Consider removing outliers from target
+SCHEDULED: <2017-03-17 Fri>
 
 * BHIVE (archive)** Analysis
 *** HIV expression prediciton
