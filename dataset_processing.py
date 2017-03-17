@@ -117,6 +117,7 @@ def get_ML_inputs(dataset = None,cat = "",):
     # preprocess features of specific types
     step_tracker += 1
     print "\n\n{}. Preprocessing feature type values".format(step_tracker)
+    preprocess_objects = {}
     for f_type in f_types:
         if f_type in feature_types_to_exclude_list:
             continue
@@ -124,9 +125,11 @@ def get_ML_inputs(dataset = None,cat = "",):
         p_fun = f_types[f_type]["preprocess"]
         if p_fun is not None:
             print "\n\tPreprocessing '{}' features".format(f_type)
-            df.iloc[:,idx] = p_fun(df.iloc[:,idx].values,ml_method)
+            p_fun = p_fun(ml_method)
+            df.iloc[:,idx] = p_fun.fit_transform(df.iloc[:,idx].values)
             nan_samples = np.sum(np.isnan(df.iloc[:,idx].values),axis = 1).sum()
             print "\t{} samples remaining with Nan values for '{}' features".format(nan_samples,f_type)
+        preprocess_objects[f_type] = p_fun
     del idx,p_fun,nan_samples
 
 

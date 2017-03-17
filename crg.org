@@ -59,9 +59,11 @@ CLOSED: [2017-03-16 Thu 16:55]
 ****** DONE Intra-inter_ratio
 CLOSED: [2017-03-16 Thu 16:41]
 ***** TODO Chip-c features
-****** TODO zb_r
-SCHEDULED: <2017-03-17 Fri 14:00>
+****** DONE zb_r
+CLOSED: [2017-03-17 Fri 14:32] SCHEDULED: <2017-03-17 Fri 14:00>
 first take the max value from [[file:~/CRG/Datasets/Jurkat_gws_50kb.txt][this set]] and hiv combined and scale with this one
+i think for this as long as I use the same scaling factor for training and prediction
+the value of the factor can be picked to falcilitate training
 ****** DONE hb_r
 CLOSED: [2017-03-16 Thu 17:26]
 no processing required for this feature
@@ -91,7 +93,24 @@ CLOSED: [2017-03-16 Thu 16:56]
 CLOSED: [2017-03-16 Thu 18:08]
 **** TODO Consider removing outliers from target
 SCHEDULED: <2017-03-17 Fri>
+**** TODO instantiate feature_type preprocessing as objects
+SCHEDULED: <2017-03-20 Mon>
+so that they preserve scaling and normalisation parameters for training set
+to be used on test set and subsequent predicitons
+***** TODO Store the object in the dict for future use
+SCHEDULED: <2017-03-20 Mon>
+***** TODO Test the process objects on test and train
+SCHEDULED: <2017-03-20 Mon>
+****** TODO gmfpt
+****** TODO row_sum
+****** TODO ab_score
+****** TODO distances
+****** TODO contact_decay
+****** TODO chip-c features
 
+* Events at CRG
+** Seminar on genetics
+SCHEDULED: <2017-03-22 Wed 12:00-13:00>
 * BHIVE (archive)** Analysis
 *** HIV expression prediciton
 **** Run SVMs
