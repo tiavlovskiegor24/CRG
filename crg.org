@@ -108,6 +108,25 @@ SCHEDULED: <2017-03-20 Mon>
 ****** TODO contact_decay
 ****** TODO chip-c features
 
+**** TODO Introduce tail compaction below 1% and above 99% of data points for outlier removal 
+SCHEDULED: <2017-03-20 Mon>
+upper = 99nt percentile
+lower = 1st percentile
+mean_sep = (upper-lower)/(n*0.98-1)
+sort top and bottow percent of samples
+prev = upper
+for each sample > upper in sorted order:
+    sample_old = sample
+    next = sample
+    sep_d = (next-prev-mean_sep)
+    if sep_d > 0
+        fraction = sep_d/mean_sep
+        sample_new = mean_sep*(1+log(1+fraction))
+    else:
+        sample_new = sample_old
+    prev = sample_old
+then the same for lower 1 percent
+
 * Events at CRG
 ** Seminar on genetics
 SCHEDULED: <2017-03-22 Wed 12:00-13:00>
