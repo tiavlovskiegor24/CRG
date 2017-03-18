@@ -124,7 +124,7 @@ class gmfpt_preprocessing(object):
 
         self.ml_method = ml_method
 
-    def fit_transform(self,array,skip = False):
+    def fit_transform(self,array,skip = True):
         #method for extracting scaling parameters from train set and tranforming
         # the train set
 
@@ -146,15 +146,20 @@ class gmfpt_preprocessing(object):
 
             # removing outliers at the tails
             percent = 1.
-            print "\tRemoving top and bottom {}% percent of samples".format(percent)
             self.upper = np.nanpercentile(array,100-percent,axis = 0,keepdims = True)
             self.lower = np.nanpercentile(array,percent,axis = 0,keepdims = True)
+
+            #path compaction
+
+            #removing samples below lower and above upper
+            print "\tRemoving top and bottom {}% percent of samples".format(percent)
             nan_mask = np.where(~np.isnan(array))
             array[nan_mask] = np.where(
                 np.greater_equal(array[nan_mask],self.lower) &\
                 np.less_equal(array[nan_mask],self.upper)
                 ,array[nan_mask],np.nan)
 
+            
             print "\tRescaling 'gmfpt' to 0-1 range"
             array = (array-self.lower)/(self.upper-self.lower)
                     
