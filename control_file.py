@@ -49,7 +49,7 @@ source = "data/Jurkat_hiv_{}_50kb.txt"
 
 ### Indicate target feature selection and preprocessing routine ###
 
-def get_targets(dataset,in_dataset = True):
+def get_targets(dataset,in_dataset = False):
 
     # takes the column 'targets' from dataset if in_dataset is true
     if in_dataset:
@@ -75,10 +75,11 @@ def get_targets(dataset,in_dataset = True):
         #print y.shape
 
     else:
-        print "Problem is a regression with targets on a continuous scale"
+        print "\tProblem is a regression with targets on a continuous scale"
         print "\tTaking the log of targets (expression ratio)"
         array = np.log1p(exp_ratio).reshape(-1,1)
-
+        
+        
         print "\tRescaling the targets to 0-1 range"
         array = (array-np.nanmin(array,axis = 0,keepdims = True))\
                 /(np.nanmax(array,axis = 0,keepdims = True)-np.nanmin(array,axis = 0,keepdims = True))

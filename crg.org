@@ -43,9 +43,9 @@ CLOSED: [2017-03-13 Mon 14:25] SCHEDULED: <2017-03-13 Mon>
 **** DONE Move target values selection and processing to control file
 CLOSED: [2017-03-14 Tue 14:01]
 **** TODO Generate classification report for predictions on test dataset using best param classifier :bhive:ml_pipeline:
-SCHEDULED: <2017-03-15 Wed 12:00>
-**** TODO Include preprocessing functions for feature types in [[file:feature_types.py][feature_types]] :bhive:features:ds_processing:
-SCHEDULED: <2017-03-15 Wed 13:00>
+SCHEDULED: <2017-03-23 Thu 12:00>
+**** DONE Include preprocessing functions for feature types in [[file:feature_types.py][feature_types]] :bhive:features:ds_processing:
+CLOSED: [2017-03-20 Mon 14:05] SCHEDULED: <2017-03-15 Wed 13:00>
 ***** DONE Hi-c features
 CLOSED: [2017-03-16 Thu 16:56]
 ****** DONE GMFPT
@@ -58,16 +58,18 @@ CLOSED: [2017-03-16 Thu 16:00]
 CLOSED: [2017-03-16 Thu 16:55]
 ****** DONE Intra-inter_ratio
 CLOSED: [2017-03-16 Thu 16:41]
-***** TODO Chip-c features
+***** DONE Chip-c features
+CLOSED: [2017-03-20 Mon 14:05]
 ****** DONE zb_r
 CLOSED: [2017-03-17 Fri 14:32] SCHEDULED: <2017-03-17 Fri 14:00>
 first take the max value from [[file:~/CRG/Datasets/Jurkat_gws_50kb.txt][this set]] and hiv combined and scale with this one
 i think for this as long as I use the same scaling factor for training and prediction
 the value of the factor can be picked to falcilitate training
 ****** DONE hb_r
-CLOSED: [2017-03-16 Thu 17:26]
-no processing required for this feature
-***** TODO Display how many samples are Nan (excluded for each feature type)
+CLOSED: [2017-03-20 Mon 14:05]
+rescaling is required
+***** DONE Display how many samples are Nan (excluded for each feature type)
+CLOSED: [2017-03-20 Mon 13:55]
 **** DONE Count how many nan targets are present and add them to samples mask
 CLOSED: [2017-03-16 Thu 18:05]
 **** TODO Create Adaboost pipeline                     :bhive:ml_pipeline:
@@ -81,24 +83,27 @@ For example check for present feature_types by looking through dataset column na
 checking "_? _" segments of the name the feature type id look up table
 **** TODO Include categorical feature type into [[file:feature_types.py][our feature dictionary]]
 **** TODO Swithc back to regression on expression level
-**** TODO Consider using boolean masks for ML_inputs     :bhive:ml_inputs:
-SCHEDULED: <2017-03-15 Wed 13:00>
+**** DONE Consider using boolean masks for ML_inputs     :bhive:ml_inputs:
+CLOSED: [2017-03-20 Mon 16:02] SCHEDULED: <2017-03-15 Wed 13:00>
 **** DONE Consider maskig categorical features instead of [[file:dataset_processing.py::68][dropping]] them:bhive:ml_inputs:
 CLOSED: [2017-03-16 Thu 18:16]
-**** TODO List non processed and/or non-removed features
-SCHEDULED: <2017-03-16 Thu 16:30>
+**** DONE List non processed and/or non-removed features
+CLOSED: [2017-03-20 Mon 16:02] SCHEDULED: <2017-03-16 Thu 16:30>
 **** DONE Rescale distance features to 0-1
 CLOSED: [2017-03-16 Thu 16:56]
 **** DONE Scale target values to 0-1
 CLOSED: [2017-03-16 Thu 18:08]
-**** TODO Consider removing outliers from target
+**** TODO Consider tail packing for target values
 SCHEDULED: <2017-03-17 Fri>
+yes lower 1 percent and upper 5 percent
 **** TODO instantiate feature_type preprocessing as objects
 SCHEDULED: <2017-03-20 Mon>
 so that they preserve scaling and normalisation parameters for training set
 to be used on test set and subsequent predicitons
 ***** TODO Store the object in the dict for future use
 SCHEDULED: <2017-03-20 Mon>
+***** TODO Include test preprocessing in ML inputs
+SCHEDULED: <2017-03-21 Tue>
 ***** TODO Test the process objects on test and train
 SCHEDULED: <2017-03-20 Mon>
 ****** TODO gmfpt
@@ -106,10 +111,9 @@ SCHEDULED: <2017-03-20 Mon>
 ****** TODO ab_score
 ****** TODO distances
 ****** TODO contact_decay
-****** TODO chip-c features
-
+****** TODO chip-c featu
 **** TODO Introduce tail compaction below 1% and above 99% of data points for outlier removal 
-SCHEDULED: <2017-03-20 Mon>
+SCHEDULED: <2017-03-21 Tue>
 upper = 99nt percentile
 lower = 1st percentile
 mean_sep = (upper-lower)/(n*0.98-1)
@@ -127,6 +131,22 @@ for each sample > upper in sorted order:
     prev = sample_old
 then the same for lower 1 percent
 
+
+!!!Important!!! neighbour separation based compaction does not work because the same
+point will get mapped to different values depending on how many points come before him
+
+The better way is to simply compress the separation distance linearly 
+from the benchmark percentile
+compression ration can be equivalent to 1% of internal  98% range 
+
+**** TODO Consider using 3 class clasification (low, medium,high exression)
+DEADLINE: <2017-03-24 Fri>
+
+***** TODO Create function for generating 3 class targets
+SCHEDULED: <2017-03-20 Mon>
+
+** TODO Check CRG email
+SCHEDULED: <2017-03-21 Tue 13:30 ++1d>
 * Events at CRG
 ** Seminar on genetics
 SCHEDULED: <2017-03-22 Wed 12:00-13:00>

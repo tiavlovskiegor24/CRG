@@ -35,7 +35,8 @@ class ML_inputs_tuple(object):
     
 def get_ML_inputs(dataset = None,cat = "",):
     # importing pipeline controls
-    from control_file import ml_method,feature_types_to_exclude_list, features_to_exclude_list, sample_groups, source, get_targets
+    from control_file import ml_method,feature_types_to_exclude_list,\
+        features_to_exclude_list, sample_groups, source, get_targets
 
     # importing feature types dictionary
     from feature_types import feature_types_dict as f_types    
@@ -74,14 +75,60 @@ def get_ML_inputs(dataset = None,cat = "",):
     m,n = df.shape # m - number of samples,n - number of features
 
     # default matrix mask are full range
-    features_mask = np.arange(n)
-    samples_mask = np.arange(m)
+    samples_mask = np.ones(m,dtype = bool)
+    features_mask = np.ones(n,dtype = bool)
 
     
     feature_names = df.columns.tolist()
     ML_inputs["feature_names"] = np.array(feature_names,dtype=str)
+
     
-    
+    #go through all feautures and recognise their feature_type if any
+    #skip if feature is in features to exlude list
+    #other wise store the feature as unrecognised and report to user
+    step_tracker += 1
+    print "\n\n{}. Identifying features present in the dataset".format(step_tracker)
+    f_type_indices = {}
+    unrecognised_features = {}
+    for i,feature_name in enumerate(feature_names):
+        feature_recognised = False
+        for f_type in f_types:
+            
+            if f_types[f_type]["id_fun"](feature_name):
+                feature_recognised = True
+
+                if f_type in f_type_indices:
+                    f_type_indices[f_type].append(i)
+                else:
+                    f_type_indices[f_type] = [i]
+
+        if feature_name in features_to_exclude_list:
+            feature_recognised = True
+            features_mask[i] = False
+
+        if not feature_recognised:
+            unrecognised_features[feature_name] = i
+
+    for f_type in f_type_indices: 
+        f_type_indices[f_type] = np.array(f_type_indices[f_type])
+        print "\n\t{} features of type '{}' are present".format(len(f_type_indices[f_type]),f_type)
+        if f_type in feature_types_to_exclude_list:
+            print "\t\tExcluding feature type: '{}'".format(f_type)
+            features_mask[f_type_indices[f_type]] = False
+
+    print "\n\tList of excluded individual features:\n\t{}"\
+            .format(features_to_exclude_list.keys())
+
+    if unrecognised_features:
+        print "\n\tList of unrecognised features:\n\t{}"\
+            .format(unrecognised_features.keys())
+    else:
+        del unrecognised_features
+
+    ML_inputs["feature_types"] = f_type_indices
+    del f_type_indices
+
+    '''
     # identify all features_types present in dataset and removing the ones in drop list
     step_tracker += 1
     print "\n\n{}. Identifying present feature types in the dataset".format(step_tracker)
@@ -98,10 +145,17 @@ def get_ML_inputs(dataset = None,cat = "",):
                 print "\t\tExcluding feature type: '{}'".format(f_type)
                 b_mask[idx] = False
 
-    # update feature mask
+    # update feature mask based on feature_types_to_exclude
     features_mask = features_mask[b_mask]
 
     del id_fun,idx,b_mask
+
+
+    for f_type in ML_inputs["feature_types"]:        
+        assert np.equal(f_type_indices[f_type],ML_inputs["feature_types"][f_type]).all(),\
+                            "'{}' feature indices are not equal".format(f_type)
+    if np.equal(f_type_indices[f_type],ML_inputs["feature_types"][f_type]).all():
+        print "\n All Indices coincide"
 
 
     #mask individual features to exclude
@@ -110,10 +164,15 @@ def get_ML_inputs(dataset = None,cat = "",):
         # exclude targets column by default
         #features_to_exclude_list["targets"] = None
         
-        print "\n\n{}. Excluding individual features:\n{}".format(step_tracker,features_to_exclude_list.keys())
-        features_mask = [i for i in features_mask if (feature_names[i] not in features_to_exclude_list)]
-        
+        print "\n\n{}. Excluding individual features:\n{}"\
+            .format(step_tracker,features_to_exclude_list.keys())
+        features_mask = [i for i in features_mask if (feature_names[i] not in \
+                                                      features_to_exclude_list)]
 
+    assert np.equal(np.arange(n)[features_mask],features_mask).all(),"Features masks do not match"
+    print np.equal(np.arange(n)[features_mask],features_mask).all()
+    '''
+    
     # preprocess features of specific types
     step_tracker += 1
     print "\n\n{}. Preprocessing feature type values".format(step_tracker)
@@ -126,13 +185,15 @@ def get_ML_inputs(dataset = None,cat = "",):
         if p_fun is not None:
             print "\n\tPreprocessing '{}' features".format(f_type)
             p_fun = p_fun(ml_method)
-            df.iloc[:,idx] = p_fun.fit_transform(df.iloc[:,idx].values)
+            df.iloc[:,idx] = p_fun.fit_transform(df.iloc[:,idx].values,skip = True)
             nan_samples = np.sum(np.isnan(df.iloc[:,idx].values),axis = 1).sum()
-            print "\t{} samples remaining with Nan values for '{}' features".format(nan_samples,f_type)
+            print "\t{} samples remaining with Nan values for '{}' features."\
+                .format(nan_samples,f_type)
         preprocess_objects[f_type] = p_fun
     del idx,p_fun,nan_samples
 
 
+    
     # get target values from the dataset
     step_tracker += 1
     print "\n\n{}. Extracting target values".format(step_tracker)
@@ -148,8 +209,9 @@ def get_ML_inputs(dataset = None,cat = "",):
     step_tracker += 1
     nan_samples = (df.iloc[:,features_mask].isnull().values.sum(axis = 1) > 0).ravel()
     nan_samples = np.logical_or(nan_samples,nan_targets)
-    print "\n\n{}. Excluding total of {} samples with NaN entries".format(step_tracker,nan_samples.sum())
-    samples_mask = np.arange(m)[~nan_samples]
+    print "\n\n{}. Excluding total of {} samples with NaN entries"\
+        .format(step_tracker,nan_samples.sum())
+    samples_mask = ~nan_samples
     
 
     # form index arrays for each of the sample groups
@@ -278,6 +340,8 @@ def import_features(df,res = "",directory = None,feature_filenames = None):
                 df.ix[idx,feature] = data[np.where(data[:,0] == chrom)[0],3][bins[idx]].astype(np.float)
     return df
 
+
+
 def drop_features(df_modified,columns_to_drop=None):
     if columns_to_drop is None:
         columns_to_drop = ['brcd','pos', 'gene_name',"rep",\
@@ -289,7 +353,6 @@ def drop_features(df_modified,columns_to_drop=None):
     return df_modified
 
     
-
 
 def load_feature_names(filename):
     features = {}

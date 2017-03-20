@@ -40,6 +40,23 @@ class feature_type_name(object):
         return array
 '''
 
+'''
+feature_type_name =  {
+
+    "id_fun":(lambda x: True if (???) else False), # function that takes the string name \
+    #of the feature and return True if feature belongs to this feature type
+
+    "preprocess":reduce((lambda x,fun: fun(x) ),[fun1,fun2,...]), # a list of \
+    #preprocessing functions [fun1,fun2,...] to be applied on the feature values
+
+    "file_format":".txt", # details of the feature file format 
+
+    "about":"...", # short description of the feature type
+}
+'''
+
+
+
 class distance_preprocessing(object):
 
     def __init__(self,ml_method):
@@ -124,7 +141,7 @@ class gmfpt_preprocessing(object):
 
         self.ml_method = ml_method
 
-    def fit_transform(self,array,skip = True):
+    def fit_transform(self,array,skip = False):
         #method for extracting scaling parameters from train set and tranforming
         # the train set
 
@@ -323,7 +340,7 @@ class row_sum_preprocessing(object):
 
         if self.ml_method not in []:
 
-            print "\tApplying log1p to 'row_sum' values"
+            #print "\tApplying log1p to 'row_sum' values"
             array = np.log1p(array)
 
             # removing outliers at the tails
@@ -603,28 +620,77 @@ chip_c_zb_r = {
         
     }
 
+class chip_c_hb_r_preprocessing(object):
+
+    def __init__(self,ml_method):
+
+        self.ml_method = ml_method
+
+    def fit_transform(self,array,skip = False):
+        #method for extracting scaling parameters from train set and tranforming
+        # the train set itself
+
+        self.skip = skip
+        
+        if self.skip: 
+            print "\tSkipping the preprocessing of 'chip_c_hb_r' features"
+            return array
+        
+        
+        import numpy as np
+
+        #Nan handling
+        #Nans typically lie in non-reachable region and thus it is better to remove this samples
+        #Leave Nans and get_ML_inputs will take care of them
+
+        if self.ml_method not in []:
+
+            print "\tRescaling 'chip_c_hb_r' to 0-1 range"
+            self.max_vals = np.nanmax(array,axis = 0,keepdims = True)
+            self.min_vals = np.nanmin(array,axis = 0,keepdims = True)
+            array = (array-self.min_vals)/(self.max_vals-self.min_vals)
+
+        return array
+
+    def transform(self,array):
+
+        if self.skip:
+            print "\tSkipping the preprocessing of 'chip_c_hb_r' features"
+            return array
+
+        import numpy as np
+
+        #Nan handling
+        #Nans typically lie in non-reachable region and thus it is better to remove this samples
+        #Leave Nans and get_ML_inputs will take care of them
+
+        if self.ml_method not in []:
+
+            print "\tRescaling 'chip_c_hb_r' to 0-1 range"
+            array = (array-self.min_vals)/(self.max_vals-self.min_vals)
+
+        return array
+
+
+
+
+chip_c_hb_r = {
+
+        "id_fun" : (lambda x: True if (x[-5:] == "_hb_r")  else False), 
+
+        "preprocess" : chip_c_hb_r_preprocessing, 
+        
+        "file_format" : "this features are not stored explicitly in files", 
+       
+        "about" : "rate of Hi-C contacts containing at least one enriched zerone bin. (i.e. hb/#contacts)", 
+        
+}
+
+
 
     
 
 ### 3. Add the feature type entry to the dictionary below with the following default format ###
-
-'''
-    "feature_type_name" : {
-
-        "id_fun":(lambda x: True if (???) else False), # function that takes the string name \
-        #of the feature and return True if feature belongs to this feature type
-
-        "preprocess":reduce((lambda x,fun: fun(x) ),[fun1,fun2,...]), # a list of \
-        #preprocessing functions [fun1,fun2,...] to be applied on the feature values
-
-        "file_format":".txt", # details of the feature file format 
-
-        "about":"...", # short description of the feature type
-    }, # don't forget a comma at the end of the entry
-'''
-
-
-
 
 feature_types_dict = {
 
@@ -681,17 +747,7 @@ feature_types_dict = {
     },
 
 
-    "chip_c_hb_r" : {
-
-        "id_fun" : (lambda x: True if (x[-5:] == "_hb_r")  else False), 
-
-        "preprocess" : None, 
-        
-        "file_format" : "this features are not stored explicitly in files", 
-       
-        "about" : "rate of Hi-C contacts containing at least one enriched zerone bin. (i.e. hb/#contacts)", 
-        
-    },
+    "chip_c_hb_r" : chip_c_hb_r,
 
 
     # categorical features
