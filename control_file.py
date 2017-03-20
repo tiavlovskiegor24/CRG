@@ -49,7 +49,15 @@ source = "data/Jurkat_hiv_{}_50kb.txt"
 
 ### Indicate target feature selection and preprocessing routine ###
 
-def get_targets(dataset):
+def get_targets(dataset,in_dataset = True):
+
+    # takes the column 'targets' from dataset if in_dataset is true
+    if in_dataset:
+        array = dataset["targets"].values.reshape(-1,1)
+        return array
+
+    # otherwise targets are computed from scratch
+    
     import numpy as np
     # currently target values are assumed
     print "\tComputing the RNA/DNA expression ratio as our target values"
