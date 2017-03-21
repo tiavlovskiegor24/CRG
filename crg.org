@@ -157,9 +157,16 @@ SCHEDULED: <2017-03-20 Mon>
 
 ** TODO Check CRG email
 SCHEDULED: <2017-03-21 Tue 13:30 
-* Events at CRG
+
+* CRG Events
 ** Seminar on genetics
 SCHEDULED: <2017-03-22 Wed 12:00-13:00>
+
+* Lab events
+
+** My journal club
+SCHEDULED: <2017-04-20 Thu 14:00 -2w>
+
 * BHIVE (archive)** Analysis
 *** HIV expression prediciton
 **** Run SVMs
