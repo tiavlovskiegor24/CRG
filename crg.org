@@ -96,17 +96,21 @@ CLOSED: [2017-03-16 Thu 18:08]
 **** TODO Consider tail packing for target values
 SCHEDULED: <2017-03-17 Fri>
 yes lower 1 percent and upper 5 percent
-**** TODO instantiate feature_type preprocessing as objects
-SCHEDULED: <2017-03-20 Mon>
+simple linear scaling to 1 percent of inner 98% range
+**** DONE instantiate feature_type preprocessing as objects
+CLOSED: [2017-03-21 Tue 13:58] SCHEDULED: <2017-03-20 Mon>
 so that they preserve scaling and normalisation parameters for training set
 to be used on test set and subsequent predicitons
-***** TODO Store the object in the dict for future use
+***** DONE Store the object in the dict for future use
+CLOSED: [2017-03-21 Tue 13:57]
+stored in 'processing field of ML_inputs'
 SCHEDULED: <2017-03-20 Mon>
-***** TODO Include test preprocessing in ML inputs
-SCHEDULED: <2017-03-21 Tue>
+***** DONE Include test preprocessing in ML inputs
+CLOSED: [2017-03-21 Tue 13:59] SCHEDULED: <2017-03-21 Tue>
 ***** TODO Test the process objects on test and train
 SCHEDULED: <2017-03-20 Mon>
-****** TODO gmfpt
+****** DONE gmfpt
+CLOSED: [2017-03-21 Tue 13:59]
 ****** TODO row_sum
 ****** TODO ab_score
 ****** TODO distances
@@ -137,8 +141,14 @@ point will get mapped to different values depending on how many points come befo
 
 The better way is to simply compress the separation distance linearly 
 from the benchmark percentile
-compression ration can be equivalent to 1% of internal  98% range 
-
+compression ration can be equivalent to 1% of internal  98% range
+**** DONE Create linear tail compaction in [[file:auxiliary_items.py][auxiliary functions]]
+CLOSED: [2017-03-21 Tue 14:01]
+***** TODO Embedd this linear function to all features
+SCHEDULED: <2017-03-22 Wed>
+****** DONE gmfpt
+CLOSED: [2017-03-21 Tue 14:01]
+****** TODO Row sum
 **** TODO Consider using 3 class clasification (low, medium,high exression)
 DEADLINE: <2017-03-24 Fri>
 
@@ -146,7 +156,7 @@ DEADLINE: <2017-03-24 Fri>
 SCHEDULED: <2017-03-20 Mon>
 
 ** TODO Check CRG email
-SCHEDULED: <2017-03-21 Tue 13:30 ++1d>
+SCHEDULED: <2017-03-21 Tue 13:30 
 * Events at CRG
 ** Seminar on genetics
 SCHEDULED: <2017-03-22 Wed 12:00-13:00>

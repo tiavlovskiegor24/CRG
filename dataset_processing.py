@@ -3,34 +3,7 @@ import pandas as pd
 from feature_file_processing import read_feature_file, full_array
 from myplot import myplot
 from collections import namedtuple
-
-
-class ML_inputs_tuple(object):
-    
-    def __init__(self,ML_inputs_dict):
-        self.data = namedtuple("ML_inputs",ML_inputs_dict.keys())(**ML_inputs_dict)
-    
-    def __getitem__(self,key):
-        return getattr(self.data,key)
-
-    def get_data(self,mask = True):
-        if not mask:
-            confirm = raw_input("Are you sure you want to get non-masked data?(Y/n)\n Some samples may contain Nans and some columns may not be suitable for Machine Learning")
-            if confirm == "Y":
-                samples = getattr(self.data,"samples")
-                targets = getattr(self.data,"targets")
-                return samples,targets
-            
-        print "Returning masked data"
-        samples_mask,features_mask = getattr(self.data,"mask")
-        samples = getattr(self.data,"samples")[samples_mask,:][:,features_mask].astype(np.float)
-        targets = getattr(self.data,"targets")[samples_mask].astype(np.float)
-
-        return samples,targets
-        
-    def __repr__(self):
-        return self.data.__repr__()
-
+from auxiliary_items import ML_inputs_tuple
 
     
 def get_ML_inputs(dataset = None):
@@ -43,9 +16,14 @@ def get_ML_inputs(dataset = None):
 
     
     #create datastructure of relevant inputs to Machine Learning pipeline
-    ML_inputs = dict(filename = None,category=cat,train_samples = None,test_samples = None,train_targets = None,\
-                     test_targets,train_sample_groups = None,test_sample_groups,feature_names = None,feature_types = None,\
-                     mask = None,preprocessing = None)
+    ML_inputs = dict(filename = None,
+                     train_samples = None,test_samples = None,
+                     train_targets = None,test_targets = None,
+                     train_sample_groups = None,test_sample_groups = None,
+                     feature_names = None,
+                     feature_types = None,
+                     mask = None,
+                     preprocessing = None)
     
     if dataset is None:
         #read the dataframe from file
@@ -72,10 +50,13 @@ def get_ML_inputs(dataset = None):
     cat_features = ["cat","strand"]
     df = encode_one_hot(df,cat_features)
     df = drop_features(df,cat_features)
+    df_test = encode_one_hot(df_test,cat_features)
+    df_test = drop_features(df_test,cat_features)
 
     # get the final df shape
     m,n = df.shape # m - number of samples,n - number of features
     m_test = df_test.shape[0]
+
     # default matrix mask are full range
     train_samples_mask = np.ones(m,dtype = bool)
     test_samples_mask = np.ones(m_test,dtype = bool)
@@ -145,7 +126,7 @@ def get_ML_inputs(dataset = None):
             print "\n\tPreprocessing '{}' features".format(f_type)
             p_fun = p_fun(ml_method)
             df.iloc[:,idx] = p_fun.fit_transform(df.iloc[:,idx].values,skip = False)
-            df_test.iloc[:,idx] = p_fun.transform(df_test.iloc[:,idx])
+            df_test.iloc[:,idx] = p_fun.transform(df_test.iloc[:,idx].values)
             nan_samples = np.sum(np.isnan(df.iloc[:,idx].values),axis = 1).sum()
             test_nan_samples = np.sum(np.isnan(df_test.iloc[:,idx].values),axis = 1).sum()
             print "\t{} train and {} test  samples remaining with Nan values for '{}' features."\
@@ -187,13 +168,15 @@ def get_ML_inputs(dataset = None):
     # form index arrays for each of the sample groups
     if sample_groups:
         ML_inputs["train_sample_groups"] = {}
+        ML_inputs["test_sample_groups"] = {}
         for feature in sample_groups:
             # get group indices
             if feature in df.columns.tolist():
                 group_sort = {}
                 test_group_sort = {}
-                for group_name in df[feature][samples_mask].unique():
+                for group_name in df[feature][train_samples_mask].unique():
                     group_sort[group_name] = np.where(df[feature][train_samples_mask] == group_name)[0]
+                for group_name in df_test[feature][test_samples_mask].unique():
                     test_group_sort[group_name] = np.where(df_test[feature][test_samples_mask] == group_name)[0]
                 ML_inputs["train_sample_groups"][feature] = group_sort
                 ML_inputs["test_sample_groups"][feature] = test_group_sort
@@ -209,9 +192,9 @@ def get_ML_inputs(dataset = None):
     ML_inputs["train_samples"] = train_samples
 
     test_samples = df_test.as_matrix()
-    ML_inputs["test_sampels"] = test_samples
+    ML_inputs["test_samples"] = test_samples
 
-    ML_inputs["mask"] = namedtuple("ML_inputs_mask","train_samples_mask,test_samples_mask,features_mask")({
+    ML_inputs["mask"] = namedtuple("ML_inputs_mask","train_samples_mask,test_samples_mask,features_mask")(**{
         
         "train_samples_mask":np.array(train_samples_mask),
         "test_samples_mask": np.array(test_samples_mask),                              
@@ -220,7 +203,7 @@ def get_ML_inputs(dataset = None):
         })
 
 
-    ML_inputs["preprocessing"] = preprocessing_funcs
+    ML_inputs["preprocessing"] = preprocess_funcs
 
     #convert inputs to tuple
     ML_inputs = ML_inputs_tuple(ML_inputs)

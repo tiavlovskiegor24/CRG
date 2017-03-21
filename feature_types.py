@@ -19,7 +19,7 @@ class feature_type_name(object):
 
         self.skip = skip
         
-        if skip: 
+        if self.skip: 
             print "\tSkipping the preprocessing of 'feature_type' features"
             return array
         
@@ -69,7 +69,7 @@ class distance_preprocessing(object):
 
         self.skip = skip
         
-        if skip: 
+        if self.skip: 
             print "\tSkipping the preprocessing of 'distance' features"
             return array
         
@@ -133,7 +133,8 @@ distance = {
 
 
 ########################### Hi-C features ########################################################
-
+from auxiliary_items import linear_tail_compaction
+import numpy as np
 
 class gmfpt_preprocessing(object):
 
@@ -147,38 +148,37 @@ class gmfpt_preprocessing(object):
 
         self.skip = skip
         
-        if skip: 
+        if self.skip: 
             print "\tSkipping the preprocessing of 'gmfpt' features"
             return array
         
-        import numpy as np
 
         #Nan handling
         #Nans typically lie in non-reachable region and thus it is better to remove this samples
         #Leave Nans and get_ML_inputs will take care of them
 
         if self.ml_method not in []:
+            m,n = array.shape
+            
             print "\tApplying log1p to 'gmfpt' values"
             array = np.log1p(array)
 
-            # removing outliers at the tails
-            percent = 1.
-            self.upper = np.nanpercentile(array,100-percent,axis = 0,keepdims = True)
-            self.lower = np.nanpercentile(array,percent,axis = 0,keepdims = True)
-
-            #path compaction
-
-            #removing samples below lower and above upper
-            print "\tRemoving top and bottom {}% percent of samples".format(percent)
-            nan_mask = np.where(~np.isnan(array))
-            array[nan_mask] = np.where(
-                np.greater_equal(array[nan_mask],self.lower) &\
-                np.less_equal(array[nan_mask],self.upper)
-                ,array[nan_mask],np.nan)
-
+            # processing outliers at the tails
+            self.lower_percentile = 2.
+            self.upper_percentile = 99.
+            self.min_value = np.nanmin(array,axis = 0)
+            self.max_values = np.nanmax(array,axis = 0)
+            
+            
+            # shrinking values in top and bottom tails
+            print "\tShrinking top {}% and bottom {}% of samples"\
+                .format(self.upper_percentile,self.lower_percentile)
+            self.lower_tail_scaling = None
+            self.upper_tail_scaling = None
+            array = linear_tail_compaction(array,self,fit = True)
             
             print "\tRescaling 'gmfpt' to 0-1 range"
-            array = (array-self.lower)/(self.upper-self.lower)
+            #array = (array-self.min_value)/(self.max_value-self.min_value)
                     
 
         return array
@@ -200,16 +200,14 @@ class gmfpt_preprocessing(object):
             print "\tApplying log1p to 'gmfpt' values"
             array = np.log1p(array)
 
-            # removing outliers at the tails
-            print "\tRemoving outliers"
-            nan_mask = np.where(~np.isnan(array))
-            array[nan_mask] = np.where(
-                np.greater_equal(array[nan_mask],self.lower) &\
-                np.less_equal(array[nan_mask],self.upper)
-                ,array[nan_mask],np.nan)
+            # shrinking values in top and bottom tails
+            
+            array = linear_tail_compaction(array,self,fit = False)
+
+            
 
             print "\tRescaling 'gmfpt' to 0-1 range"
-            array = (array-self.lower)/(self.upper-self.lower)
+            array = (array-self.min_value)/(self.max_value-self.min_value)
                     
 
         return array
@@ -274,7 +272,7 @@ class contact_decay_preprocessing(object):
 
     def transform(self,array):
 
-        if skip: 
+        if self.skip: 
             print "\tSkipping the preprocessing of 'contact_decay' features"
             return array
         
@@ -503,7 +501,7 @@ class ab_score_preprocessing(object):
 
         self.skip = skip
         
-        if skip: 
+        if self.skip: 
             print "\tSkipping the preprocessing of 'ab_score' features"
             return array
         
