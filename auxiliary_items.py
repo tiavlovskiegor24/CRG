@@ -24,7 +24,7 @@ class ML_inputs_tuple(object):
         print "Returning masked '{}' data".format(train_or_test)
         masks = getattr(self.data,"mask")
         samples_mask = getattr(masks,"{}_samples_mask".format(train_or_test))
-        features_mask = getattr(self.data,"features_mask")
+        features_mask = getattr(masks,"features_mask")
         
         samples = getattr(self.data,"{}_samples".format(train_or_test))\
                   [samples_mask,:][:,features_mask].astype(np.float)
@@ -53,31 +53,44 @@ def linear_tail_compaction(array,p_object,fit = True):
     upper_value = np.nanpercentile(array,p_object.upper_percentile,axis = 0,keepdims = True)
     inner_value_range = upper_value - lower_value
 
-    
-    
-    
+
     normal_percent_range = inner_value_range*1. / inner_percentile_range
     
 
     if fit:
         p_object.lower_tail_scaling = (lower_value-np.nanmin(array,axis = 0))\
                                       /(normal_percent_range*p_object.lower_percentile)
-    
+
+        # remove zeros
+        p_object.lower_tail_scaling[p_object.lower_tail_scaling == 0] = 1.
+
+        
         p_object.upper_tail_scaling = (np.nanmax(array,axis = 0)-upper_value)\
                                       /(normal_percent_range*(100-p_object.upper_percentile))
 
+        #remove zeros
+        p_object.upper_tail_scaling[p_object.upper_tail_scaling == 0] = 1.
 
-    nan_mask = np.where(~np.isnan(array))
-    
-    array[nan_mask] = np.where(np.greater_equal(array[nan_mask],lower_value), 
-                               array[nan_mask],
+        
+    #mask nan entries
+    nan_mask = np.where(~np.isfinite(array))
+    array[nan_mask] = 0
+
+    # compact lower tail
+    array = np.where(np.greater_equal(array,lower_value), 
+                               array,
                                lower_value - \
-                               (lower_value-array[nan_mask])/p_object.lower_tail_scaling)
-    
-    array[nan_mask] = np.where(np.less_equal(array[nan_mask],upper_value), 
-                               array[nan_mask],
+                               (lower_value-array)/p_object.lower_tail_scaling)
+
+    # compact upper tail
+    array = np.where(np.less_equal(array,upper_value), 
+                               array,
                                upper_value + \
-                               (array[nan_mask]-upper_value)/p_object.upper_tail_scaling)
+                               (array-upper_value)/p_object.upper_tail_scaling)
+
+    # reinsert nan entries
+    array[nan_mask] = np.nan
+    
     if fit:
         p_object.min_value = np.nanmin(array,axis = 0)
         p_object.max_value = np.nanmax(array,axis = 0)

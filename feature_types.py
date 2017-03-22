@@ -98,25 +98,23 @@ class distance_preprocessing(object):
     def transform(self,array):
 
         if self.skip:
-            print "\tSkipping the preprocessing of 'distance' features"
+            
             return array
 
         import numpy as np
         #Nan handling
-        print "\tSubstituting NaNs with the values 10 times larger than max value found in the dataset"
+        
         max_value = np.nanmax(array)
-        print "\tMax value in the data {}".format(max_value)
+        
         max_value *= 10
         array = np.where(np.isnan(array),max(self.max_value,max_value),array)
 
         if self.ml_method not in ["RF"]:
-            print "\tApplying log1p to 'distance' values"
+            
             array = np.log1p(array)
 
-            print "\tRescaling 'distance' features to 0-1 range"
             array = (array-self.min_vals)/(self.max_vals-self.min_vals)
                     
-
         return array
 
 distance = {
@@ -165,7 +163,9 @@ class gmfpt_preprocessing(object):
 
             # processing outliers at the tails
             self.lower_percentile = 2.
-            self.upper_percentile = 99.
+            self.upper_percentile = 98.
+
+            #default scaling values
             self.min_value = np.nanmin(array,axis = 0)
             self.max_values = np.nanmax(array,axis = 0)
             
@@ -173,12 +173,10 @@ class gmfpt_preprocessing(object):
             # shrinking values in top and bottom tails
             print "\tShrinking top {}% and bottom {}% of samples"\
                 .format(self.upper_percentile,self.lower_percentile)
-            self.lower_tail_scaling = None
-            self.upper_tail_scaling = None
             array = linear_tail_compaction(array,self,fit = True)
             
             print "\tRescaling 'gmfpt' to 0-1 range"
-            #array = (array-self.min_value)/(self.max_value-self.min_value)
+            array = (array-self.min_value)/(self.max_value-self.min_value)
                     
 
         return array
@@ -204,9 +202,7 @@ class gmfpt_preprocessing(object):
             
             array = linear_tail_compaction(array,self,fit = False)
 
-            
-
-            print "\tRescaling 'gmfpt' to 0-1 range"
+            #rescaling values to 0-1 range
             array = (array-self.min_value)/(self.max_value-self.min_value)
                     
 
@@ -254,6 +250,27 @@ class contact_decay_preprocessing(object):
         #Leave Nans and get_ML_inputs will take care of them
 
         if self.ml_method not in []:
+
+            # processing outliers at the tails
+            self.lower_percentile = 1.
+            self.upper_percentile = 99.
+
+            #default scaling values
+            self.min_value = np.nanmin(array,axis = 0)
+            self.max_values = np.nanmax(array,axis = 0)
+            
+            
+            # shrinking values in top and bottom tails
+            print "\tShrinking top {}% and bottom {}% of samples"\
+                .format(self.upper_percentile,self.lower_percentile)
+            array = linear_tail_compaction(array,self,fit = True)
+
+            # rescaling values to 0-1 range
+            print "\tRescaling values to 0-1 range"
+            array = (array-self.min_value)/(self.max_value-self.min_value)
+
+
+            '''
             # removing outliers at the tails
             percent = 1.
             print "\tRemoving top and bottom {}% percent of samples".format(percent)
@@ -267,7 +284,7 @@ class contact_decay_preprocessing(object):
 
             print "\tRescaling 'contact_decay' to 0-1 range"
             array = (array-self.lower)/(self.upper-self.lower)
-                    
+            '''        
         return array
 
     def transform(self,array):
@@ -283,6 +300,15 @@ class contact_decay_preprocessing(object):
         #Leave Nans and get_ML_inputs will take care of them
 
         if self.ml_method not in []:
+
+            # shrinking values in top and bottom tails        
+            array = linear_tail_compaction(array,self,fit = False)
+
+            # rescaling values to 0-1 range
+            array = (array-self.min_value)/(self.max_value-self.min_value)
+
+
+            '''
             # removing outliers at the tails
             print "\tRemoving outliers"
             nan_mask = np.where(~np.isnan(array))
@@ -293,7 +319,7 @@ class contact_decay_preprocessing(object):
 
             print "\tRescaling 'contact_decay' to 0-1 range"
             array = (array-self.lower)/(self.upper-self.lower)
-                    
+            '''        
         return array
 
 
@@ -339,8 +365,28 @@ class row_sum_preprocessing(object):
         if self.ml_method not in []:
 
             #print "\tApplying log1p to 'row_sum' values"
-            array = np.log1p(array)
+            #array = np.log1p(array)
 
+            # processing outliers at the tails
+            self.lower_percentile = 1.
+            self.upper_percentile = 99.
+
+            #default scaling values
+            self.min_value = np.nanmin(array,axis = 0)
+            self.max_values = np.nanmax(array,axis = 0)
+            
+            
+            # shrinking values in top and bottom tails
+            print "\tShrinking top {}% and bottom {}% of samples"\
+                .format(self.upper_percentile,self.lower_percentile)
+            array = linear_tail_compaction(array,self,fit = True)
+
+            # rescaling values to 0-1 range
+            print "\tRescaling values to 0-1 range"
+            array = (array-self.min_value)/(self.max_value-self.min_value)
+
+            
+            '''
             # removing outliers at the tails
             percent = 1.
             print "\tRemoving top and bottom {}% percent of samples".format(percent)
@@ -355,7 +401,7 @@ class row_sum_preprocessing(object):
             print "\tRescaling 'row_sum' to 0-1 range"
             
             array = (array-self.lower)/(self.upper-self.lower)
-
+            '''
         return array
 
 
@@ -373,9 +419,16 @@ class row_sum_preprocessing(object):
 
         if self.ml_method not in []:
 
-            print "\tApplying log1p to 'row_sum' values"
-            array = np.log1p(array)
+            #print "\tApplying log1p to 'row_sum' values"
+            #array = np.log1p(array)
 
+            # shrinking values in top and bottom tails
+            array = linear_tail_compaction(array,self,fit = False)
+
+            # rescaling values to 0-1 range
+            array = (array-self.min_value)/(self.max_value-self.min_value)
+
+            '''
             # removing outliers at the tails
             print "\tRemoving outliers"
             nan_mask = np.where(~np.isnan(array))
@@ -386,9 +439,8 @@ class row_sum_preprocessing(object):
 
             print "\tRescaling 'row_sum' to 0-1 range"
             array = (array-self.lower)/(self.upper-self.lower)
-
+            '''
         return array
-
 
 
 row_sum = {
@@ -427,6 +479,27 @@ class intra_inter_ratio_preprocessing(object):
         #Leave Nans and get_ML_inputs will take care of them
 
         if self.ml_method not in []:
+
+            # processing outliers at the tails
+            self.lower_percentile = 1.
+            self.upper_percentile = 99.
+
+            #default scaling values
+            self.min_value = np.nanmin(array,axis = 0)
+            self.max_values = np.nanmax(array,axis = 0)
+            
+            
+            # shrinking values in top and bottom tails
+            print "\tShrinking top {}% and bottom {}% of samples"\
+                .format(self.upper_percentile,self.lower_percentile)
+            array = linear_tail_compaction(array,self,fit = True)
+
+            # rescaling values to 0-1 range
+            print "\tRescaling values to 0-1 range"
+            array = (array-self.min_value)/(self.max_value-self.min_value)
+
+
+            '''
             # removing outliers at the tails
             percent = 1.
             print "\tRemoving top and bottom {}% percent of samples".format(percent)
@@ -440,7 +513,7 @@ class intra_inter_ratio_preprocessing(object):
 
             print "\tRescaling 'intra_inter_ratio' to 0-1 range"
             array = (array-self.lower)/(self.upper-self.lower)
-
+            '''
 
         return array
 
@@ -458,10 +531,15 @@ class intra_inter_ratio_preprocessing(object):
         #Leave Nans and get_ML_inputs will take care of them
 
         if self.ml_method not in []:
-            # removing outliers at the tails
             
-            print "\tRemoving outliers"
-        
+            # shrinking values in top and bottom tails
+            array = linear_tail_compaction(array,self,fit = False)
+
+            # rescaling values to 0-1 range
+            array = (array-self.min_value)/(self.max_value-self.min_value)
+
+            '''
+            # removing outliers at the tails
             nan_mask = np.where(~np.isnan(array))
             array[nan_mask] = np.where(
                 np.greater_equal(array[nan_mask],self.lower) &\
@@ -470,7 +548,7 @@ class intra_inter_ratio_preprocessing(object):
 
             print "\tRescaling 'intra_inter_ratio' to 0-1 range"
             array = (array-self.lower)/(self.upper-self.lower)
-
+            '''
         return array
 
 
@@ -579,11 +657,30 @@ class chip_c_zb_r_preprocessing(object):
 
         if self.ml_method not in []:
 
+            #default scaling values
+            self.min_value = np.nanmin(array,axis = 0)
+            self.max_values = np.nanmax(array,axis = 0)
+            
+            # processing outliers at the tails
+            self.lower_percentile = 1.
+            self.upper_percentile = 99.
+
+            
+            # shrinking values in top and bottom tails
+            print "\tShrinking top {}% and bottom {}% of samples"\
+                .format(self.upper_percentile,self.lower_percentile)
+            array = linear_tail_compaction(array,self,fit = True)
+
+            # rescaling values to 0-1 range
+            print "\tRescaling values to 0-1 range"
+            array = (array-self.min_value)/(self.max_value-self.min_value)
+
+            '''
             print "\tRescaling 'chip_c_zb_r' to 0-1 range"
             self.max_vals = np.nanmax(array,axis = 0,keepdims = True)
             self.min_vals = np.nanmin(array,axis = 0,keepdims = True)
             array = (array-self.min_vals)/(self.max_vals-self.min_vals)
-
+            '''
         return array
 
     def transform(self,array):
@@ -599,10 +696,17 @@ class chip_c_zb_r_preprocessing(object):
         #Leave Nans and get_ML_inputs will take care of them
 
         if self.ml_method not in []:
+            
+            # shrinking values in top and bottom tails
+            array = linear_tail_compaction(array,self,fit = False)
 
+            # rescaling values to 0-1 range
+            array = (array-self.min_value)/(self.max_value-self.min_value)
+
+            '''
             print "\tRescaling 'chip_c_zb_r' to 0-1 range"
             array = (array-self.min_vals)/(self.max_vals-self.min_vals)
-
+            '''
         return array
         
 
@@ -643,11 +747,31 @@ class chip_c_hb_r_preprocessing(object):
 
         if self.ml_method not in []:
 
+            # processing outliers at the tails
+            self.lower_percentile = 1.
+            self.upper_percentile = 99.
+
+            #default scaling values
+            self.min_value = np.nanmin(array,axis = 0)
+            self.max_values = np.nanmax(array,axis = 0)
+            
+            
+            # shrinking values in top and bottom tails
+            print "\tShrinking top {}% and bottom {}% of samples"\
+                .format(self.upper_percentile,self.lower_percentile)
+            array = linear_tail_compaction(array,self,fit = True)
+
+            # rescaling values to 0-1 range
+            print "\tRescaling values to 0-1 range"
+            array = (array-self.min_value)/(self.max_value-self.min_value)
+        
+            '''
             print "\tRescaling 'chip_c_hb_r' to 0-1 range"
             self.max_vals = np.nanmax(array,axis = 0,keepdims = True)
             self.min_vals = np.nanmin(array,axis = 0,keepdims = True)
             array = (array-self.min_vals)/(self.max_vals-self.min_vals)
-
+            '''
+            
         return array
 
     def transform(self,array):
@@ -663,10 +787,17 @@ class chip_c_hb_r_preprocessing(object):
         #Leave Nans and get_ML_inputs will take care of them
 
         if self.ml_method not in []:
+            
+            # shrinking values in top and bottom tails
+            array = linear_tail_compaction(array,self,fit = False)
 
+            # rescaling values to 0-1 range
+            array = (array-self.min_value)/(self.max_value-self.min_value)
+
+            '''
             print "\tRescaling 'chip_c_hb_r' to 0-1 range"
             array = (array-self.min_vals)/(self.max_vals-self.min_vals)
-
+            '''
         return array
 
 

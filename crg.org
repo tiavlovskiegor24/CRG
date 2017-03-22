@@ -148,7 +148,14 @@ CLOSED: [2017-03-21 Tue 14:01]
 SCHEDULED: <2017-03-22 Wed>
 ****** DONE gmfpt
 CLOSED: [2017-03-21 Tue 14:01]
-****** TODO Row sum
+****** DONE Row sum
+CLOSED: [2017-03-22 Wed 11:46]
+****** DONE Contact decay
+CLOSED: [2017-03-22 Wed 11:47]
+****** DONE inter_intra
+CLOSED: [2017-03-22 Wed 11:48]
+****** DONE chip-c features
+CLOSED: [2017-03-22 Wed 13:41]
 **** TODO Consider using 3 class clasification (low, medium,high exression)
 DEADLINE: <2017-03-24 Fri>
 
