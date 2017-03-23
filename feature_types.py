@@ -56,7 +56,6 @@ feature_type_name =  {
 '''
 
 
-
 class distance_preprocessing(object):
 
     def __init__(self,ml_method):
@@ -166,8 +165,8 @@ class gmfpt_preprocessing(object):
             self.upper_percentile = 98.
 
             #default scaling values
-            self.min_value = np.nanmin(array,axis = 0)
-            self.max_values = np.nanmax(array,axis = 0)
+            self.min_value = np.nanmin(array,axis = 0,keepdims = True)
+            self.max_values = np.nanmax(array,axis = 0,keepdims = True)
             
             
             # shrinking values in top and bottom tails
@@ -256,8 +255,8 @@ class contact_decay_preprocessing(object):
             self.upper_percentile = 99.
 
             #default scaling values
-            self.min_value = np.nanmin(array,axis = 0)
-            self.max_values = np.nanmax(array,axis = 0)
+            self.min_value = np.nanmin(array,axis = 0,keepdims = True)
+            self.max_values = np.nanmax(array,axis = 0,keepdims = True)
             
             
             # shrinking values in top and bottom tails
@@ -372,8 +371,8 @@ class row_sum_preprocessing(object):
             self.upper_percentile = 99.
 
             #default scaling values
-            self.min_value = np.nanmin(array,axis = 0)
-            self.max_values = np.nanmax(array,axis = 0)
+            self.min_value = np.nanmin(array,axis = 0,keepdims = True)
+            self.max_values = np.nanmax(array,axis = 0,keepdims = True)
             
             
             # shrinking values in top and bottom tails
@@ -485,8 +484,8 @@ class intra_inter_ratio_preprocessing(object):
             self.upper_percentile = 99.
 
             #default scaling values
-            self.min_value = np.nanmin(array,axis = 0)
-            self.max_values = np.nanmax(array,axis = 0)
+            self.min_value = np.nanmin(array,axis = 0,keepdims = True)
+            self.max_values = np.nanmax(array,axis = 0,keepdims = True)
             
             
             # shrinking values in top and bottom tails
@@ -658,8 +657,8 @@ class chip_c_zb_r_preprocessing(object):
         if self.ml_method not in []:
 
             #default scaling values
-            self.min_value = np.nanmin(array,axis = 0)
-            self.max_values = np.nanmax(array,axis = 0)
+            self.min_value = np.nanmin(array,axis = 0,keepdims = True)
+            self.max_values = np.nanmax(array,axis = 0,keepdims = True)
             
             # processing outliers at the tails
             self.lower_percentile = 1.
@@ -752,8 +751,8 @@ class chip_c_hb_r_preprocessing(object):
             self.upper_percentile = 99.
 
             #default scaling values
-            self.min_value = np.nanmin(array,axis = 0)
-            self.max_values = np.nanmax(array,axis = 0)
+            self.min_value = np.nanmin(array,axis = 0,keepdims = True)
+            self.max_values = np.nanmax(array,axis = 0,keepdims = True)
             
             
             # shrinking values in top and bottom tails
@@ -907,3 +906,115 @@ feature_types_dict = {
     
     
 }
+
+
+#### Targets selection and preprocessing types
+
+class in_dataset(object):
+    '''
+    target are already in the dataset 
+    '''
+    def __init__(self):
+        pass
+    
+    def fit_transform(self,dataset,column_name = 'targets'):
+
+        # takes the column  from dataset if in_dataset is true
+        self.column_name = column_name
+        array = dataset[self.column_name].values
+
+        return array
+
+
+    def transform(self,dataset,in_dataset = False):
+        array = dataset[self.column_name]
+        return array
+
+class exp_ratio_cont(object):
+    '''
+    targets are continuous values equal to the ratio of RNA to DNA expression
+    '''
+    def __init__(self):
+        pass
+    
+    def fit_transform(self,dataset,in_dataset = False):
+
+        # takes the column 'targets' from dataset if in_dataset is true
+        if in_dataset:
+            array = dataset["targets"].values
+            return array
+
+        # otherwise targets are computed from scratch
+
+        import numpy as np
+        # currently target values are assumed
+        print "\n\tComputing the RNA/DNA expression ratio as our target values"
+        exp_ratio = (dataset["RNA"]*1.0/dataset["DNA"]).values
+
+        print "\n\tProblem is a regression with targets on a continuous scale"
+        print "\n\tTaking the log of targets (expression ratio)"
+        array = np.log1p(exp_ratio)
+
+        self.max_value = np.nanmax(array,axis = 0,keepdims = True)
+        self.min_value = np.nanmin(array,axis = 0,keepdims = True)
+
+        print "\n\tRescaling the targets to 0-1 range"
+        array = (array-self.min_value)/(self.max_value-self.min_value)
+
+        return array
+
+    def transform(self,dataset,in_dataset = False):
+        import numpy as np
+        # takes the column 'targets' from dataset if in_dataset is true
+        if in_dataset:
+            array = dataset["targets"].values
+            return array
+
+        # otherwise targets are computed from scratch
+
+        #computing the expression ration
+        exp_ratio = (dataset["RNA"]*1.0/dataset["DNA"]).values
+        # taking log of expression ratio
+        array = np.log1p(exp_ratio)
+        # scaling values to 0-1 range
+        array = (array-self.min_value)/(self.max_value-self.min_value)
+
+        return array
+
+
+class exp_ratio_bin(object):
+    def __init__(self,threshold = 3):
+        self.threshold = threshold
+    
+    def fit_transform(self,dataset,threshold = 3):
+
+        import numpy as np
+        # currently target values are assumed
+        print "\n\tComputing the RNA/DNA expression ratio as our target values"
+        exp_ratio = (dataset["RNA"]*1.0/dataset["DNA"]).values
+
+        print "\tTransforming the problem into binary classification"
+        print "\tSetting targets with expression ratio >= {} to 1, else 0".format(self.threshold)
+        array = np.where(exp_ratio >= self.threshold,1.,0.).astype(np.float)
+
+        print "\tBinary label split: %.2f (proportion of ones)"%(array.sum()/array.shape[0])
+
+        return array
+
+    def transform(self,dataset):
+        import numpy as np
+
+        #computing the expression ration
+        exp_ratio = (dataset["RNA"]*1.0/dataset["DNA"]).values
+
+        array = np.where(exp_ratio >= self.threshold,1.,0.).astype(np.float)
+
+        return array
+
+
+target_types = {
+    "exp_ratio_cont":exp_ratio_cont,
+    "in_dataset":in_dataset,
+    "exp_ratio_bin":exp_ratio_bin,
+}
+

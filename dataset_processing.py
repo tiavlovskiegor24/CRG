@@ -9,10 +9,11 @@ from auxiliary_items import ML_inputs_tuple
 def get_ML_inputs(dataset = None):
     # importing pipeline controls
     from control_file import ml_method,feature_types_to_exclude_list,\
-        features_to_exclude_list, sample_groups, source, get_targets
+        features_to_exclude_list, sample_groups, source, target_type
 
     # importing feature types dictionary
-    from feature_types import feature_types_dict as f_types    
+    from feature_types import feature_types_dict as f_types
+    from feature_types import target_types
 
     
     #create datastructure of relevant inputs to Machine Learning pipeline
@@ -139,14 +140,19 @@ def get_ML_inputs(dataset = None):
     # get target values from the dataset
     step_tracker += 1
     print "\n\n{}. Extracting target values".format(step_tracker)
-    train_targets = get_targets(df)
+    print "\n\tUsing '{}' target type".format(target_type["name"])
+    targets_p_fun = target_types[target_type["name"]](**target_type["params"])
+    train_targets = targets_p_fun.fit_transform(df)
     nan_targets = np.isnan(train_targets).ravel()
-    test_targets = get_targets(df_test)
+
+    test_targets = targets_p_fun.transform(df_test)
     test_nan_targets = np.isnan(test_targets).ravel()
-    print "\t{} train and {} test targets remaining with Nan values".format(nan_targets.sum(),test_nan_targets.sum(),f_type)
+    print "\n\t{} train and {} test targets remaining with Nan values".format(nan_targets.sum(),test_nan_targets.sum(),f_type)
     
     ML_inputs["train_targets"] = train_targets
     ML_inputs["test_targets"] = test_targets
+
+    preprocess_funcs["targets"] = targets_p_fun
 
     del train_targets,test_targets
 

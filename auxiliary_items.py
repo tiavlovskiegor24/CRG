@@ -21,7 +21,7 @@ class ML_inputs_tuple(object):
                 targets = getattr(self.data,"{}_targets".format(train_or_test))
                 return samples,targets
             
-        print "Returning masked '{}' data".format(train_or_test)
+        print "\tReturning masked '{}' data".format(train_or_test)
         masks = getattr(self.data,"mask")
         samples_mask = getattr(masks,"{}_samples_mask".format(train_or_test))
         features_mask = getattr(masks,"features_mask")
@@ -58,14 +58,14 @@ def linear_tail_compaction(array,p_object,fit = True):
     
 
     if fit:
-        p_object.lower_tail_scaling = (lower_value-np.nanmin(array,axis = 0))\
+        p_object.lower_tail_scaling = (lower_value-np.nanmin(array,axis = 0,keepdims = True))\
                                       /(normal_percent_range*p_object.lower_percentile)
 
         # remove zeros
         p_object.lower_tail_scaling[p_object.lower_tail_scaling == 0] = 1.
 
         
-        p_object.upper_tail_scaling = (np.nanmax(array,axis = 0)-upper_value)\
+        p_object.upper_tail_scaling = (np.nanmax(array,axis = 0,keepdims = True)-upper_value)\
                                       /(normal_percent_range*(100-p_object.upper_percentile))
 
         #remove zeros
@@ -92,7 +92,7 @@ def linear_tail_compaction(array,p_object,fit = True):
     array[nan_mask] = np.nan
     
     if fit:
-        p_object.min_value = np.nanmin(array,axis = 0)
-        p_object.max_value = np.nanmax(array,axis = 0)
+        p_object.min_value = np.nanmin(array,axis = 0,keepdims = True)
+        p_object.max_value = np.nanmax(array,axis = 0,keepdims = True)
 
     return array

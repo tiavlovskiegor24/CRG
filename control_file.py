@@ -14,8 +14,12 @@ ml_method = "SVM"
 ### Specify feature types to exclude from ML training ###
 feature_types_to_exclude_list = {
     "chip_c_hb" : None,
+    "chip_c_hb_r" : None,
     "chip_c_zb" : None,
+    "chip_c_zb_r" : None,
     "categorical": None,
+    "distance":None,
+    
 }
 
 ### Specify individual features to exclude from ML training ###
@@ -47,45 +51,17 @@ sample_groups = ["chrom"]
 source = "data/Jurkat_hiv_{}_50kb.txt"
 
 
-### Indicate target feature selection and preprocessing routine ###
+### Indicate target type and pointer to its selection and preprocessing object with any params ###
+'''
+target_type = {
+    "name":"exp_ratio_bin",
+    "params":{"threshold":3},
+}
 
-def get_targets(dataset,in_dataset = False):
-
-    # takes the column 'targets' from dataset if in_dataset is true
-    if in_dataset:
-        array = dataset["targets"].values.reshape(-1,1)
-        return array
-
-    # otherwise targets are computed from scratch
-    
-    import numpy as np
-    # currently target values are assumed
-    print "\tComputing the RNA/DNA expression ratio as our target values"
-    exp_ratio = (dataset["RNA"]*1.0/dataset["DNA"]).values
-
-    # choose if 
-    binary = False
-    if binary:
-        threshold = 3
-        print "\tTransforming the problem into binary classification"
-        print "\tSetting targets with expression ratio >= {} to 1, else 0".format(threshold)
-        array = np.where(exp_ratio.values >= threshold,1.,0.).reshape(-1,1).astype(np.float)
-    
-        print "\tBinary label split: %.2f"%(array.sum()/array.shape)[0]
-        #print y.shape
-
-    else:
-        print "\tProblem is a regression with targets on a continuous scale"
-        print "\tTaking the log of targets (expression ratio)"
-        array = np.log1p(exp_ratio).reshape(-1,1)
-        
-        
-        print "\tRescaling the targets to 0-1 range"
-        array = (array-np.nanmin(array,axis = 0,keepdims = True))\
-                /(np.nanmax(array,axis = 0,keepdims = True)-np.nanmin(array,axis = 0,keepdims = True))
-        
-    return array
-    
-
+'''
+target_type = {
+    "name":"exp_ratio_cont",
+    "params":{},
+}
 
 

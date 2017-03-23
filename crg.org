@@ -73,8 +73,10 @@ CLOSED: [2017-03-20 Mon 13:55]
 **** DONE Count how many nan targets are present and add them to samples mask
 CLOSED: [2017-03-16 Thu 18:05]
 **** TODO Create Adaboost pipeline                     :bhive:ml_pipeline:
-**** TODO Add gradient boosting to ML_pipeline
-SCHEDULED: <2017-03-20 Mon>
+**** DONE Add gradient boosting to ML_pipeline
+CLOSED: [2017-03-23 Thu 12:52] SCHEDULED: <2017-03-20 Mon>
+**** DONE Add nearest neighbours to ML_pipelines
+CLOSED: [2017-03-23 Thu 12:52]
 **** DONE Moving the scalling of features to the DS preprocessing stage :bhive:ds_processing:ml_inputs:
 CLOSED: [2017-03-16 Thu 18:12]
 move the issue to the feature_type processing [[file:feature_types.py][rules]] 
@@ -97,8 +99,9 @@ CLOSED: [2017-03-16 Thu 18:08]
 SCHEDULED: <2017-03-17 Fri>
 yes lower 1 percent and upper 5 percent
 simple linear scaling to 1 percent of inner 98% range
+for now not using it
 **** DONE instantiate feature_type preprocessing as objects
-CLOSED: [2017-03-21 Tue 13:58] SCHEDULED: <2017-03-20 Mon>
+CLOSED: [2017-03-23 Thu 10:29] SCHEDULED: <2017-03-20 Mon>
 so that they preserve scaling and normalisation parameters for training set
 to be used on test set and subsequent predicitons
 ***** DONE Store the object in the dict for future use
@@ -107,17 +110,22 @@ stored in 'processing field of ML_inputs'
 SCHEDULED: <2017-03-20 Mon>
 ***** DONE Include test preprocessing in ML inputs
 CLOSED: [2017-03-21 Tue 13:59] SCHEDULED: <2017-03-21 Tue>
-***** TODO Test the process objects on test and train
-SCHEDULED: <2017-03-20 Mon>
+***** DONE Test the process objects on test and train
+CLOSED: [2017-03-23 Thu 10:29] SCHEDULED: <2017-03-20 Mon>
 ****** DONE gmfpt
 CLOSED: [2017-03-21 Tue 13:59]
-****** TODO row_sum
-****** TODO ab_score
-****** TODO distances
-****** TODO contact_decay
-****** TODO chip-c featu
-**** TODO Introduce tail compaction below 1% and above 99% of data points for outlier removal 
-SCHEDULED: <2017-03-21 Tue>
+****** DONE row_sum
+CLOSED: [2017-03-23 Thu 10:28]
+****** DONE ab_score
+CLOSED: [2017-03-23 Thu 10:28]
+****** DONE distances
+CLOSED: [2017-03-23 Thu 10:28]
+****** DONE contact_decay
+CLOSED: [2017-03-23 Thu 10:28]
+****** DONE chip-c featu
+CLOSED: [2017-03-23 Thu 10:28]
+**** DONE Introduce tail compaction below 1% and above 99% of data points for outlier removal 
+CLOSED: [2017-03-23 Thu 10:29] SCHEDULED: <2017-03-21 Tue>
 upper = 99nt percentile
 lower = 1st percentile
 mean_sep = (upper-lower)/(n*0.98-1)
@@ -144,8 +152,8 @@ from the benchmark percentile
 compression ration can be equivalent to 1% of internal  98% range
 **** DONE Create linear tail compaction in [[file:auxiliary_items.py][auxiliary functions]]
 CLOSED: [2017-03-21 Tue 14:01]
-***** TODO Embedd this linear function to all features
-SCHEDULED: <2017-03-22 Wed>
+***** DONE Embedd this linear function to all features
+CLOSED: [2017-03-23 Thu 10:29] SCHEDULED: <2017-03-22 Wed>
 ****** DONE gmfpt
 CLOSED: [2017-03-21 Tue 14:01]
 ****** DONE Row sum
@@ -162,12 +170,18 @@ DEADLINE: <2017-03-24 Fri>
 ***** TODO Create function for generating 3 class targets
 SCHEDULED: <2017-03-20 Mon>
 
+**** TODO Run classifiers without 'distance features'
+SCHEDULED: <2017-03-24 Fri>
+
+**** DONE Move target creation and preprocessing to feature_types
+CLOSED: [2017-03-23 Thu 17:02] SCHEDULED: <2017-03-23 Thu>
+stored in dictionary target_types
 ** TODO Check CRG email
-SCHEDULED: <2017-03-21 Tue 13:30 
+SCHEDULED: <2017-03-23 Thu 13:30>
 
 * CRG Events
-** Seminar on genetics
-SCHEDULED: <2017-03-22 Wed 12:00-13:00>
+** DONE Seminar on genetics
+CLOSED: [2017-03-23 Thu 10:30] SCHEDULED: <2017-03-22 Wed 12:00-13:00>
 
 * Lab events
 
