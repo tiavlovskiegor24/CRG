@@ -21,7 +21,7 @@ class ML_inputs_tuple(object):
                 targets = getattr(self.data,"{}_targets".format(train_or_test))
                 return samples,targets
             
-        print "\tReturning masked '{}' data".format(train_or_test)
+        #print "\tReturning masked '{}' data".format(train_or_test)
         masks = getattr(self.data,"mask")
         samples_mask = getattr(masks,"{}_samples_mask".format(train_or_test))
         features_mask = getattr(masks,"features_mask")

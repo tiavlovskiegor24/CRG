@@ -176,8 +176,8 @@ SCHEDULED: <2017-03-24 Fri>
 **** DONE Move target creation and preprocessing to feature_types
 CLOSED: [2017-03-23 Thu 17:02] SCHEDULED: <2017-03-23 Thu>
 stored in dictionary target_types
-** TODO Check CRG email
-SCHEDULED: <2017-03-23 Thu 13:30>
+** DONE Check CRG email
+CLOSED: [2017-03-24 Fri 13:45] SCHEDULED: <2017-03-23 Thu 13:30 ++1d>
 
 * CRG Events
 ** DONE Seminar on genetics

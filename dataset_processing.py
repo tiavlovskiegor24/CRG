@@ -5,15 +5,21 @@ from myplot import myplot
 from collections import namedtuple
 from auxiliary_items import ML_inputs_tuple
 
+import control_file as cf
+import feature_types as f_types
+
+reload(f_types)
+reload(cf)
+
     
 def get_ML_inputs(dataset = None):
     # importing pipeline controls
-    from control_file import ml_method,feature_types_to_exclude_list,\
-        features_to_exclude_list, sample_groups, source, target_type
+    #from control_file import ml_method,feature_types_to_exclude_list,\
+     #   features_to_exclude_list, sample_groups, source, target_type
 
     # importing feature types dictionary
-    from feature_types import feature_types_dict as f_types
-    from feature_types import target_types
+    #from feature_types import feature_types as f_types
+    #from feature_types import target_types
 
     
     #create datastructure of relevant inputs to Machine Learning pipeline
@@ -28,11 +34,11 @@ def get_ML_inputs(dataset = None):
     
     if dataset is None:
         #read the dataframe from file
-        df = pd.read_table(source.format("train"),comment = "#")
-        df_test = pd.read_table(source.format("test"),comment = "#")
-        ML_inputs["filename"] = source.format("train/test")    
+        df = pd.read_table(cf.source.format("train"),comment = "#")
+        df_test = pd.read_table(cf.source.format("test"),comment = "#")
+        ML_inputs["filename"] = cf.source.format("train/test")    
     elif isinstance(dataset,pd.DataFrame):
-        df = source
+        df = cf.source
         df_test = None
     else:
         print "Invalid source input\n Must be pandas dataset or csv filename"
@@ -77,9 +83,9 @@ def get_ML_inputs(dataset = None):
     unrecognised_features = {}
     for i,feature_name in enumerate(feature_names):
         feature_recognised = False
-        for f_type in f_types:
+        for f_type in f_types.feature_types:
             
-            if f_types[f_type]["id_fun"](feature_name):
+            if f_types.feature_types[f_type]["id_fun"](feature_name):
                 feature_recognised = True
 
                 if f_type in f_type_indices:
@@ -87,7 +93,7 @@ def get_ML_inputs(dataset = None):
                 else:
                     f_type_indices[f_type] = [i]
 
-        if feature_name in features_to_exclude_list:
+        if feature_name in cf.features_to_exclude_list:
             feature_recognised = True
             features_mask[i] = False
 
@@ -97,12 +103,12 @@ def get_ML_inputs(dataset = None):
     for f_type in f_type_indices: 
         f_type_indices[f_type] = np.array(f_type_indices[f_type])
         print "\n\t{} features of type '{}' are present".format(len(f_type_indices[f_type]),f_type)
-        if f_type in feature_types_to_exclude_list:
+        if f_type in cf.feature_types_to_exclude_list:
             print "\t\tExcluding feature type: '{}'".format(f_type)
             features_mask[f_type_indices[f_type]] = False
 
     print "\n\tList of excluded individual features:\n\t{}"\
-            .format(features_to_exclude_list.keys())
+            .format(cf.features_to_exclude_list.keys())
 
     if unrecognised_features:
         print "\n\tList of unrecognised features:\n\t{}"\
@@ -118,14 +124,14 @@ def get_ML_inputs(dataset = None):
     step_tracker += 1
     print "\n\n{}. Preprocessing feature type values".format(step_tracker)
     preprocess_funcs = {}
-    for f_type in f_types:
-        if f_type in feature_types_to_exclude_list:
+    for f_type in ML_inputs["feature_types"]:
+        if f_type in cf.feature_types_to_exclude_list:
             continue
         idx = ML_inputs["feature_types"][f_type]
-        p_fun = f_types[f_type]["preprocess"]
+        p_fun = f_types.feature_types[f_type]["preprocess"]
         if p_fun is not None:
             print "\n\tPreprocessing '{}' features".format(f_type)
-            p_fun = p_fun(ml_method)
+            p_fun = p_fun(cf.ml_method)
             df.iloc[:,idx] = p_fun.fit_transform(df.iloc[:,idx].values,skip = False)
             df_test.iloc[:,idx] = p_fun.transform(df_test.iloc[:,idx].values)
             nan_samples = np.sum(np.isnan(df.iloc[:,idx].values),axis = 1).sum()
@@ -140,8 +146,15 @@ def get_ML_inputs(dataset = None):
     # get target values from the dataset
     step_tracker += 1
     print "\n\n{}. Extracting target values".format(step_tracker)
-    print "\n\tUsing '{}' target type".format(target_type["name"])
-    targets_p_fun = target_types[target_type["name"]](**target_type["params"])
+    print "\n\tUsing '{}' target type".format(cf.target_type["name"])
+    targets_p_fun = f_types.target_types[cf.target_type["name"]](features_mask=features_mask,
+                                                                 noise = (0,.1),
+                                                      fields = {
+                                                          #"gmfpt":None,
+                                                          #"ab_score":None,
+                                                          #"row_sum":None,
+                                                      },
+                                                      **cf.target_type["params"])
     train_targets = targets_p_fun.fit_transform(df)
     nan_targets = np.isnan(train_targets).ravel()
 
@@ -172,10 +185,10 @@ def get_ML_inputs(dataset = None):
     
 
     # form index arrays for each of the sample groups
-    if sample_groups:
+    if cf.sample_groups:
         ML_inputs["train_sample_groups"] = {}
         ML_inputs["test_sample_groups"] = {}
-        for feature in sample_groups:
+        for feature in cf.sample_groups:
             # get group indices
             if feature in df.columns.tolist():
                 group_sort = {}

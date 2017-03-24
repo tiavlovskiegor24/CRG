@@ -609,7 +609,6 @@ class ab_score_preprocessing(object):
 
         if self.ml_method not in []:
 
-            print "\tRescaling 'ab_score' to 0-1 range"
             array = (array+100)/200.
 
         return array
@@ -820,7 +819,7 @@ chip_c_hb_r = {
 
 ### 3. Add the feature type entry to the dictionary below with the following default format ###
 
-feature_types_dict = {
+feature_types = {
 
     # genomic distance feature type
     "distance" : distance,
@@ -986,7 +985,7 @@ class exp_ratio_bin(object):
     def __init__(self,threshold = 3):
         self.threshold = threshold
     
-    def fit_transform(self,dataset,threshold = 3):
+    def fit_transform(self,dataset):
 
         import numpy as np
         # currently target values are assumed
@@ -1011,10 +1010,70 @@ class exp_ratio_bin(object):
 
         return array
 
+    
+import numpy as np
 
+class test_targets(object):
+    def __init__(self,features_mask,noise=(),fields={}):
+        self.f_mask = features_mask
+        self.noise = noise
+        self.fields = fields
+    
+    def fit_transform(self,dataset):
+
+        #form targets array
+        if self.fields:
+            array = np.zeros(dataset.shape[0])
+            for field in self.fields:
+                if self.fields[field] is None:
+                    self.fields[field]  = 2*np.random.rand()-1
+                array = array + self.fields[field]*dataset[field].values.ravel()
+        else:
+            n = dataset.shape[1]
+            self.weights = 2*np.random.rand(self.f_mask.sum())-1
+            print "buye"
+            array = np.sum(dataset.as_matrix()[:,self.f_mask].astype(float) \
+                           * self.weights,
+                           axis = 1).ravel()
+        
+        # add noise
+        if self.noise:
+            print "\n\tAdding noise with mean,std: ",self.noise
+            array = array + np.random.normal(self.noise[0],self.noise[1],size = array.shape[0])
+
+        self.max_value = np.nanmax(array,axis = 0,keepdims = True)
+        self.min_value = np.nanmin(array,axis = 0,keepdims = True)
+
+        print "\n\tRescaling the targets to 0-1 range"
+        array = (array-self.min_value)/(self.max_value-self.min_value)
+        
+        return array
+
+    def transform(self,dataset):
+
+        if self.fields:
+            array = np.zeros(dataset.shape[0])
+            for field,weight in self.fields.iteritems():
+                array = array + weight*dataset[field].values.ravel()
+        else:
+            n = dataset.shape[1]
+            array = np.sum(dataset.iloc[:,np.arange(n)[self.f_mask]].values \
+                           * self.weights,
+                           axis = 1).ravel()
+        '''
+        if self.noise:
+        # add noise
+            array = array + np.random.normal(self.noise[0],self.noise[1],size = array.shape[0])        
+        '''
+        
+        array = (array-self.min_value)/(self.max_value-self.min_value)
+        return array
+
+    
 target_types = {
     "exp_ratio_cont":exp_ratio_cont,
     "in_dataset":in_dataset,
     "exp_ratio_bin":exp_ratio_bin,
+    "test_targets":test_targets,
 }
 

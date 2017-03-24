@@ -35,6 +35,8 @@ features_to_exclude_list = {
     "chrom":None,
     "RNA":None,
     "DNA":None,
+    "strand_oh__+":None,
+    "cat_oh__SG":None,
 
     # possible features remaining from older versions of datasets 
     "pos_expr":None,
@@ -58,10 +60,13 @@ target_type = {
     "params":{"threshold":3},
 }
 
-'''
 target_type = {
     "name":"exp_ratio_cont",
     "params":{},
 }
-
+'''
+target_type = {
+    "name":"test_targets",
+    "params":{},
+}
 
