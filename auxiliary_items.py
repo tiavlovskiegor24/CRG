@@ -1,44 +1,5 @@
 # module of all personally defined auxiliary functions
-
-from collections import namedtuple
 import numpy as np
-
-
-class ML_inputs_tuple(object):
-    
-    def __init__(self,ML_inputs_dict):
-        self.data = namedtuple("ML_inputs",ML_inputs_dict.keys())(**ML_inputs_dict)
-    
-    def __getitem__(self,key):
-        return getattr(self.data,key)
-
-    def get_data(self,train_or_test = "train",mask = True):
-        
-        if not mask:
-            confirm = raw_input("Are you sure you want to get non-masked data?(Y/n)\n Some samples may contain Nans and some columns may not be suitable for Machine Learning")
-            if confirm == "Y":
-                samples = getattr(self.data,"{}_samples".format(train_or_test))
-                targets = getattr(self.data,"{}_targets".format(train_or_test))
-                return samples,targets
-            
-        #print "\tReturning masked '{}' data".format(train_or_test)
-        masks = getattr(self.data,"mask")
-        samples_mask = getattr(masks,"{}_samples_mask".format(train_or_test))
-        features_mask = getattr(masks,"features_mask")
-        
-        samples = getattr(self.data,"{}_samples".format(train_or_test))\
-                  [samples_mask,:][:,features_mask].astype(np.float)
-
-        targets = getattr(self.data,"{}_targets".format(train_or_test))\
-                  [samples_mask].astype(np.float)
-
-        return samples,targets
-        
-    def __repr__(self):
-        return self.data.__repr__()
-
-
-
 
 def linear_tail_compaction(array,p_object,fit = True):
     '''

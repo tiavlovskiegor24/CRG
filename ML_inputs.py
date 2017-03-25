@@ -1,18 +1,59 @@
 import numpy as np
 import pandas as pd
+from collections import namedtuple
+
+import dataset_processing as dp
 from feature_file_processing import read_feature_file, full_array
 from myplot import myplot
 
-'''
-import control_file as cf
-import feature_types as f_types
 
-reload(f_types)
-reload(cf)
 
+class ML_inputs_tuple(object):
     
-def get_ML_inputs(control_file = cf,feature_types = f_types,dataset = None):
+    def __init__(self,ML_inputs_dict):
+        self.data = namedtuple("ML_inputs",ML_inputs_dict.keys())(**ML_inputs_dict)
+    
+    def __getitem__(self,key):
+        return getattr(self.data,key)
+
+    def get_data(self,train_or_test = "train",mask = True):
+        
+        if not mask:
+            confirm = raw_input("Are you sure you want to get non-masked data?(Y/n)\n Some samples may contain Nans and some columns may not be suitable for Machine Learning")
+            if confirm == "Y":
+                samples = getattr(self.data,"{}_samples".format(train_or_test))
+                targets = getattr(self.data,"{}_targets".format(train_or_test))
+                return samples,targets
+            
+        #print "\tReturning masked '{}' data".format(train_or_test)
+        masks = getattr(self.data,"mask")
+        samples_mask = getattr(masks,"{}_samples_mask".format(train_or_test))
+        features_mask = getattr(masks,"features_mask")
+        
+        samples = getattr(self.data,"{}_samples".format(train_or_test))\
+                  [samples_mask,:][:,features_mask].astype(np.float)
+
+        targets = getattr(self.data,"{}_targets".format(train_or_test))\
+                  [samples_mask].astype(np.float)
+
+        return samples,targets
+        
+    def __repr__(self):
+        return self.data.__repr__()
+
+
+
+def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None):
     # importing pipeline controls
+    if cf is None:
+        import control_file as cf
+
+    if f_types is None:
+        import feature_types as f_types
+
+    if t_types is None:
+        import target_types as t_types
+
     #from control_file import ml_method,feature_types_to_exclude_list,\
      #   features_to_exclude_list, sample_groups, source, target_type
 
@@ -20,6 +61,8 @@ def get_ML_inputs(control_file = cf,feature_types = f_types,dataset = None):
     #from feature_types import feature_types as f_types
     #from feature_types import target_types
 
+
+    
     
     #create datastructure of relevant inputs to Machine Learning pipeline
     ML_inputs = dict(filename = None,
@@ -54,10 +97,10 @@ def get_ML_inputs(control_file = cf,feature_types = f_types,dataset = None):
     step_tracker += 1
     print "\n\n{}. Encoding categorical features".format(step_tracker)
     cat_features = ["cat","strand"]
-    df = encode_one_hot(df,cat_features)
-    df = drop_features(df,cat_features)
-    df_test = encode_one_hot(df_test,cat_features)
-    df_test = drop_features(df_test,cat_features)
+    df = dp.encode_one_hot(df,cat_features)
+    df = dp.drop_features(df,cat_features)
+    df_test = dp.encode_one_hot(df_test,cat_features)
+    df_test = dp.drop_features(df_test,cat_features)
 
     # get the final df shape
     m,n = df.shape # m - number of samples,n - number of features
@@ -146,7 +189,7 @@ def get_ML_inputs(control_file = cf,feature_types = f_types,dataset = None):
     step_tracker += 1
     print "\n\n{}. Extracting target values".format(step_tracker)
     print "\n\tUsing '{}' target type".format(cf.target_type["name"])
-    targets_p_fun = f_types.target_types[cf.target_type["name"]](features_mask=features_mask,
+    targets_p_fun = t_types.target_types[cf.target_type["name"]](features_mask=features_mask,
                                                                  noise = (0,.1),
                                                       fields = {
                                                           #"gmfpt":None,
@@ -227,143 +270,3 @@ def get_ML_inputs(control_file = cf,feature_types = f_types,dataset = None):
     ML_inputs = ML_inputs_tuple(ML_inputs)
     
     return ML_inputs
-'''
-
-def create_full_dataset(filename,train_test = True):
-
-    #read the dataframe from file
-    df = pd.read_table(filename,comment = "#")
-
-    #import additional features from files
-    print "\nImporting features from files"
-    resolution = "50kb"# select from "10kb","50kb","100kb" and "500kb"
-    directory = "/mnt/shared/data/HiC_processing/"
-    feature_filenames = {"contact_decay":"contacts_decay_Jurkat_",\
-                         "gmfpt":"gmfpt_feature_Jurkat_",\
-                         "row_sum":"row_sum_Jurkat_"}
-    
-    df = import_features(df,resolution,directory,feature_filenames)    
-
-    # get target values from the dataset
-    #print "\nForming target values"
-    #y = get_target_values(df)
-    #df = drop_features(df,["RNA","DNA"])
-    #df["targets"] = y
-    
-    # get chromosome indices
-    chrom_sort = {}
-    for chrom in df["chrom"].unique():
-        chrom_sort[chrom] = np.where(df["chrom"] == chrom)[0]
-
-    #df = drop_features(df,["chrom"])
-
-    if train_test:
-        #split in train and test uniformly from each chromosome
-        print "\nSpliting into train and test and saving the datasets"
-        
-        train_idx,test_idx = train_test_split(df,0.9,chrom_sort)
-        for name,idx in zip(["train","test"],[train_idx,test_idx]):
-
-            to_write = df.iloc[idx,:].copy()
-
-            #if name is "test":
-             #   to_write = drop_features(to_write,["targets"])
-
-            to_write.to_csv("data/Jurkat_hiv_{}_50kb.txt".format(name),sep="\t",index=False)
-    else:
-        to_write.to_csv("data/Jurkat_hiv_{}_50kb.txt".format("full"),sep="\t",index=False)        
-                
-            
-def train_test_split(df,train_f = 0.9,chrom_sort = None):
-    '''
-    by default chrom_sort is passed and the dataset is split
-    into train and test datasets with balanced number of samples for each chromosome
-    ''' 
-    if chrom_sort is not None:
-        train_idx = np.array([],dtype=np.int) 
-        test_idx = np.array([],dtype=np.int)
-
-        for chrom,idx in chrom_sort.iteritems():
-            n = idx.shape[0]
-            s_idx = np.zeros_like(idx,dtype = bool)
-            s_idx[np.random.choice(n,int(n*train_f),replace=False)] = True
-            train_idx= np.r_[train_idx,idx[s_idx]]
-            test_idx = np.r_[test_idx,idx[~s_idx]]
-    else:
-        n = df.shape[0]
-        s_idx = np.zeros(n,dtype = bool)
-        s_idx[np.random.choice(n,int(n*train_f),replace=False)] = True
-        train_idx = np.arange(n)[s_indx]
-        test_idx = np.arange(n)[~s_idx]
-        
-    return train_idx,test_idx
-
-
-def import_features(df,res = "",directory = None,feature_filenames = None):
-    resolution = {'100kb': 100000, '10kb': 10000, '500kb': 50000, '50kb': 50000,"":None}
-    bins = (df["pos"]/resolution[res]).astype(np.int).values
-
-    for feature in feature_filenames:
-        #print "Computing feature: %s"%feature
-        print "\tImporting feature: {}".format(feature)
-        #data = np.loadtxt(directory+feature_filenames[feature]+res,dtype=np.str,delimiter="\t")
-        data = read_feature_file(directory+feature_filenames[feature]+res)
-        data = full_array(data,res = resolution[res])
-        
-        df[feature] = df["pos"]*0
-        if isinstance(data,dict):
-            for chrom in df["chrom"].unique():
-                idx = np.where(df["chrom"] == chrom)[0]
-                if chrom not in data:
-                    print "Alarm ",feature
-                df.ix[idx,feature] = data[chrom]["value"][bins[idx]]                
-        else:
-            for chrom in df["chrom"].unique():
-                idx = np.where(df["chrom"] == chrom)[0]
-                if chrom not in np.unique(data[:,0]):
-                    print "Alarm ",feature
-                df.ix[idx,feature] = data[np.where(data[:,0] == chrom)[0],3][bins[idx]].astype(np.float)
-    return df
-
-
-
-def drop_features(df_modified,columns_to_drop=None):
-    if columns_to_drop is None:
-        columns_to_drop = ['brcd','pos', 'gene_name',"rep",\
-                           "expr","nread","mapq"]
-    
-    
-    df_modified.drop(columns_to_drop, inplace=True, axis = 1)
-
-    return df_modified
-
-    
-
-def load_feature_names(filename):
-    features = {}
-    with open(filename,"r") as f:
-        for line in f:
-            line = line.strip("\n").split("\t")
-            feature = [word for word in line[0].split(" ") \
-                       if word != ""][1]
-            features[feature] = line[1]
-    return features
-
-
-def encode_one_hot(df,cat_features = None):
-    if cat_features is None:
-        return df
-    
-    for feature in cat_features:
-        f_values = np.unique(df[feature]) 
-        print '\n\tThere are {} unique values for "{}" feature.'.format(f_values.shape,feature)
-        print "\t",f_values 
-        dummies = pd.get_dummies(df[feature],prefix = feature+"_oh_",drop_first = False)
-
-        df = pd.concat([df,dummies],axis = 1)
-
-    return df
-
-
-
-

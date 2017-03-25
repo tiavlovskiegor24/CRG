@@ -14,11 +14,11 @@ ml_method = "SVM"
 ### Specify feature types to exclude from ML training ###
 feature_types_to_exclude_list = {
     "chip_c_hb" : None,
-    "chip_c_hb_r" : None,
+    #"chip_c_hb_r" : None,
     "chip_c_zb" : None,
-    "chip_c_zb_r" : None,
+    #"chip_c_zb_r" : None,
     "categorical": None,
-    "distance":None,
+    #"distance":None,
     
 }
 

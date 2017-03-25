@@ -1,3 +1,4 @@
+'''
 from sklearn.ensemble import RandomForestClassifier,RandomForestRegressor,GradientBoostingRegressor
 
 from sklearn.tree import DecisionTreeRegressor,DecisionTreeClassifier
@@ -11,19 +12,23 @@ from sklearn.preprocessing import StandardScaler,MinMaxScaler,minmax_scale
 
 from sklearn.svm import SVC
 
-from sklearn.model_selection import GridSearchCV
 
 from sklearn.metrics import classification_report
 
 from sklearn.pipeline import make_pipeline
 
-from time import time
 #from sklearn.decomposition import PCA, KernelPCA
+'''
+from sklearn.model_selection import GridSearchCV
 
+
+
+from time import time
 import numpy as np
 import pandas as pd
 
 from myplot import myplot
+import ML_estimators
 
 
 def grid_search(clf,X,y,parameters,**kwargs):
@@ -45,74 +50,17 @@ def grid_search(clf,X,y,parameters,**kwargs):
     
     return clf
 
-ML_methods = {
-    "DT_R":(DecisionTreeRegressor,
-                    {
-                        "max_features" : ("sqrt","auto",),
-                        "min_samples_split" : (3,10,30,100,300),
-                    }),
+
+def run_ML(ML_inputs,estimator_name = "DTree_Regressor",parameters = None,by_groups = None,**kwargs):
+
+    estimator,default_parameters = ML_estimators.get_estimator(estimator_name)
+    if estimator is None:
+        print "Canceling..."
+        return None
+
+    if parameters is None:
+        parameters = default_parameters
     
-    "DT_C":(DecisionTreeClassifier,
-            {
-                "max_features" : ("sqrt","auto",),
-                "min_samples_split" : (3,10,30,100,300),
-            }),
-
-    "RF_C":(RandomForestClassifier,
-            {
-                "max_features" : ("sqrt","auto",),
-                "min_samples_split" : (3,10,30,100,300),
-                "n_estimators" : (10,20,30),            
-            }),
-
-    "RF_R":(RandomForestRegressor,
-                    {
-                        "max_features" : ("sqrt","auto",),
-                        "min_samples_split" : (2,10,30,100,300),
-                        "n_estimators" : (10,20,30),
-                    }),
-
-    "SV_C":(make_pipeline(MinMaxScaler(), SVC()),
-                     {
-                         "svc__C":[0.1,1,10],
-                         "svc__gamma":[0.01,.01,.1],
-                     }),
-
-
-    "kNN_R":(KNeighborsRegressor,
-             {
-                 "n_neighbors" : (1,5,10,30,100,),
-                 "weights" : ("uniform","distance",),
-             }),
-    
-    "GB_R":(GradientBoostingRegressor,
-            {
-                "n_estimators" : (100,300,500,),
-                "loss" : ("ls",),
-                "max_depth":(3,10,),
-            }),
-    
-    "Linear_R":(LinearRegression,
-                {}),
-
-    "Lasso_R":(Lasso,
-               {
-                   "alpha":(1e-4,1e-3,1e-2,)
-               }),
-    
-}
-
-
-
-def run_ML(ML_inputs,estimator_name = "DT_Regressor",parameters = None,by_groups = None,**kwargs):
-
-    if estimator_name in ML_methods:
-        estimator,default_parameters = ML_methods[estimator_name]
-    else:
-        print "\t'{}' not in estimator list:\n{}".format(estimator_name,ML_methods.keys())
-        return
-        
-
     X,y = ML_inputs.get_data("train")
 
 
@@ -120,26 +68,24 @@ def run_ML(ML_inputs,estimator_name = "DT_Regressor",parameters = None,by_groups
         "Data is not scaled to 0-1 range"
 
     
-    if parameters is None:
-        parameters = default_parameters
 
     
     if by_groups is None:
 
-        print "\nRunning ML with {}...".format(estimator_name)
+        print "\n\tRunning ML with {} ...".format(estimator_name)
 
         clf = estimator(**kwargs)
         
         clf = grid_search(clf,X,y,parameters)
 
-        print "\nTrain score is {:.2f}".format(clf.score(X,y))
+        print "\n\tTrain score is {:.2f}".format(clf.score(X,y))
 
         f,ax = myplot(y,clf.predict(X),style = ".",shape = (1,2),figsize = (14,7),sharey = True)
         ax[0].set_title("Train samples")
         ax[0].set_ylabel("Predicted")
         
         X,y = ML_inputs.get_data("test")
-        print "\nTest score is {:.2f}".format(clf.score(X,y))
+        print "\n\tTest score is {:.2f}".format(clf.score(X,y))
         ax[1].plot(y,clf.predict(X),".")
         ax[1].set_title("Test samples")
 
