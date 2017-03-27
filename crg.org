@@ -2,7 +2,6 @@
 
 Managing my work at CRG 
 
-
 * Task log 
 
 ** March 17
@@ -167,9 +166,11 @@ CLOSED: [2017-03-22 Wed 13:41]
 **** TODO Consider using 3 class clasification (low, medium,high exression)
 DEADLINE: <2017-03-24 Fri>
 
-***** TODO Create function for generating 3 class targets
-SCHEDULED: <2017-03-20 Mon>
+***** DONE Create function for generating 3 class targets
+CLOSED: [2017-03-27 Mon 17:20] SCHEDULED: <2017-03-20 Mon>
 
+***** TODO Add [[http://scikit-learn.org/stable/modules/multiclass.html][multiclass estimator]] to ML_estimators
+SCHEDULED: <2017-03-28 Tue>
 **** TODO Run classifiers without 'distance features'
 SCHEDULED: <2017-03-24 Fri>
 

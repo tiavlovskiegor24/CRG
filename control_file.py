@@ -64,9 +64,21 @@ target_type = {
     "name":"exp_ratio_cont",
     "params":{},
 }
-'''
+
 target_type = {
     "name":"test_targets",
     "params":{},
 }
+'''
+target_type = {
+    "name":"exp_ratio_multiclass",
+    "params":{
+        "class_masks" : {
+            "low_exp_ratio" : ("x < 3",0),
+            "medium_exp_ratio" :("(x >= 3) & (x < 5)",1),
+            "high_exp_ratio" : ("x >= 5",2),
+        },
+    },
+}
+
 

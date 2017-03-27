@@ -189,14 +189,8 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None):
     step_tracker += 1
     print "\n\n{}. Extracting target values".format(step_tracker)
     print "\n\tUsing '{}' target type".format(cf.target_type["name"])
-    targets_p_fun = t_types.target_types[cf.target_type["name"]](features_mask=features_mask,
-                                                                 noise = (0,.1),
-                                                      fields = {
-                                                          #"gmfpt":None,
-                                                          #"ab_score":None,
-                                                          #"row_sum":None,
-                                                      },
-                                                      **cf.target_type["params"])
+    targets_p_fun = t_types.target_types[cf.target_type["name"]](**cf.target_type["params"])
+                                                      
     train_targets = targets_p_fun.fit_transform(df)
     nan_targets = np.isnan(train_targets).ravel()
 

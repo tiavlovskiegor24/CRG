@@ -1,5 +1,6 @@
 #### Targets selection and preprocessing types
 import numpy as np
+import auxiliary_items as aux
 
 class in_dataset(object):
     '''
@@ -76,32 +77,61 @@ class exp_ratio_cont(object):
 
 class exp_ratio_multiclass(object):
 
-    def __init__(self,class_bounds=None):
-        if class_bounds is None:
-            class_bounds = {
-                "all_samples" : lambda x:np.ones((x.shape),dtype = bool)
-            })
-        self.class_bounds = class_bounds
+    def __init__(self,class_masks = None,**kwargs):
+
+        if class_masks is None:
+            class_masks = {
+                "all_samples" : aux.create_class_mask("np.isfinite(x)",1),
+            }
+        self.class_masks = class_masks
         
     def fit_transform(self,dataset):
         import numpy as np
         # currently target values are assumed
         print "\n\tComputing the RNA/DNA expression ratio as our target values"
-        exp_ratio = (dataset["RNA"]*1.0/dataset["DNA"]).values
+        array = (dataset["RNA"]*1.0/dataset["DNA"]).values
 
         print "\tTransforming the problem into multiclass classification"
-        for class_name,class_bound in self.class_bounds.iteritems():
-            pass
-            
-        print "\tSetting targets with expression ratio >= {} to 1, else 0".format(self.threshold)
-        array = np.where(exp_ratio >= self.threshold,1.,0.).astype(np.float)
+        
+        self.class_labels = {}
+        no_label = np.ones_like(array,dtype=bool)
+        for class_description,(condition,label) in self.class_masks.iteritems():
+            print "\n\t\t Class '{}': Setting '{}' values to label {}".format(class_description,\
+                                                                         condition,label)
 
-        print "\tBinary label split: %.2f (proportion of ones)"%(array.sum()/array.shape[0])
+            class_labelling = aux.create_class_labelling(condition,label)
+
+            array,no_label = class_labelling(array,no_label)
+
+            
+            self.class_labels[label] = class_description
+            
+        for label,class_description in self.class_labels.iteritems():
+            print "\n\tOveral {:.1f}% of train samples are class {}"\
+                .format((array == label).sum()*100./array.shape[0],class_description)
 
         return array
         
 
-    def transform(self):
+    def transform(self,dataset):
+        array = (dataset["RNA"]*1.0/dataset["DNA"]).values
+
+        no_label = np.ones_like(array,dtype=bool)
+        for class_description,(condition,label) in self.class_masks.iteritems():
+
+            class_labelling = aux.create_class_labelling(condition,label)
+
+            array,no_label = class_labelling(array,no_label)
+            
+            
+        for label,class_description in self.class_labels.iteritems():
+            n_labels = (array == label).sum()*100./array.shape[0]
+                                                               
+            print "\n\tOveral {:.1f}% of test samples are class {}".format(n_labels,class_description)
+                                                               
+
+        return array
+        
 
 
 
@@ -137,7 +167,7 @@ class exp_ratio_bin(object):
     
 
 class test_targets(object):
-    def __init__(self,features_mask,noise=(),fields={}):
+    def __init__(self,features_mask,noise=(),fields={},**kwargs):
         self.f_mask = features_mask
         self.noise = noise
         self.fields = fields
@@ -197,5 +227,5 @@ target_types = {
     "in_dataset":in_dataset,
     "exp_ratio_bin":exp_ratio_bin,
     "test_targets":test_targets,
-    "exp_ratio_multiclass":expr_ratio_multiclass,
+    "exp_ratio_multiclass":exp_ratio_multiclass,
 }
