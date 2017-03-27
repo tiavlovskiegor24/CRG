@@ -74,6 +74,37 @@ class exp_ratio_cont(object):
         return array
 
 
+class exp_ratio_multiclass(object):
+
+    def __init__(self,class_bounds=None):
+        if class_bounds is None:
+            class_bounds = {
+                "all_samples" : lambda x:np.ones((x.shape),dtype = bool)
+            })
+        self.class_bounds = class_bounds
+        
+    def fit_transform(self,dataset):
+        import numpy as np
+        # currently target values are assumed
+        print "\n\tComputing the RNA/DNA expression ratio as our target values"
+        exp_ratio = (dataset["RNA"]*1.0/dataset["DNA"]).values
+
+        print "\tTransforming the problem into multiclass classification"
+        for class_name,class_bound in self.class_bounds.iteritems():
+            pass
+            
+        print "\tSetting targets with expression ratio >= {} to 1, else 0".format(self.threshold)
+        array = np.where(exp_ratio >= self.threshold,1.,0.).astype(np.float)
+
+        print "\tBinary label split: %.2f (proportion of ones)"%(array.sum()/array.shape[0])
+
+        return array
+        
+
+    def transform(self):
+
+
+
 class exp_ratio_bin(object):
     def __init__(self,threshold = 3):
         self.threshold = threshold
@@ -166,4 +197,5 @@ target_types = {
     "in_dataset":in_dataset,
     "exp_ratio_bin":exp_ratio_bin,
     "test_targets":test_targets,
+    "exp_ratio_multiclass":expr_ratio_multiclass,
 }
