@@ -174,28 +174,43 @@ CLOSED: [2017-03-27 Mon 17:20] SCHEDULED: <2017-03-20 Mon>
 
 ***** TODO Add [[http://scikit-learn.org/stable/modules/multiclass.html][multiclass estimator]] to ML_estimators
 SCHEDULED: <2017-03-28 Tue>
+**** DONE Move target creation and preprocessing to feature_types
+CLOSED: [2017-03-23 Thu 17:02] SCHEDULED: <2017-03-23 Thu>
+stored in dictionary target_types
 **** TODO Run classifiers without 'distance features'
 SCHEDULED: <2017-03-24 Fri>
 **** TODO Run estimators with chip-c features only
 SCHEDULED: <2017-03-29 Wed>
-**** DONE Move target creation and preprocessing to feature_types
-CLOSED: [2017-03-23 Thu 17:02] SCHEDULED: <2017-03-23 Thu>
-stored in dictionary target_types
+
+**** TODO Run estimators on random data 
+SCHEDULED: <2017-03-30 Thu>
+import numpy as np
+data = np.random.random((1000, 784))
+labels = np.random.randint(2, size=(1000, 1))
+
+**** TODO Run estimators on randomly shuffled targets
+SCHEDULED: <2017-03-30 Thu>
+
+**** TODO Run estimators on randomly sampled targets
+SCHEDULED: <2017-03-30 Thu>
+
+**** TODO Identify the syntetic target in the raw file 
+SCHEDULED: <2017-03-31 Fri>
+to see that pipline does not accidentlay shuffle or alter the data
 ** DONE Check CRG email
-CLOSED: [2017-03-24 Fri 13:45] SCHEDULED: <2017-03-23 Thu 13:30 ++1d>
+CLOSED: [2017-03-24 Fri 13:45] SCHEDULED: <2017-03-23 Thu 13:30 +1d>
 
 * CRG Events
 ** DONE Seminar on genetics
-CLOSED: [2017-03-23 Thu 10:30] SCHEDULED: <2017-03-22 Wed 12:00-13:00>
+CLOSED: [2017-03-28 Tue 18:05] SCHEDULED: <2017-03-22 Wed 12:00-13:00>
 
 * Lab events
-
-** My journal club
+** Journal Club                                               :journal_club:
+*** My journal club
 SCHEDULED: <2017-04-20 Thu 14:00 -2w>
 
-
-
-
+*** TODO Prepare the [[https://s3.amazonaws.com/prod_object_assets/assets/302475040714132/Transposable_elements_have_rewired_the_core_regulatory.pdf?AWSAccessKeyId=ASIAIF2K6UIW3CKOANDQ&Expires=1490716688&Signature=cBYTWWL%252BJmnljo2KS9A2MT5xCCA%253D&x-amz-security-token=FQoDYXdzEDEaDA14epkSLWLQMOKYWyK3A1fQs2qVEALdFHrCpvPo0GqKGJ433onTfZ8NtApTfbYbQJm79oU%252BM43ywZbjKlStbF7oFk3zYfoZhatFzuomxWCgl5CNYkdqn4eORTIufyCb%252F34aIX8E%252F%252Bfe%252FfgLlrmYTJ3i8BSlJF6%252BOVlCzLRDWXr35B%252FQgWVVeUaJKzWHBCD2Kxq5PKyZSBGTtV8bxtZ%252BRlwl0Gi2j5Kl9nAI7woznRSp8UmKwY3mUVCHerLIyApokAfBTuFy92A8CDItFSREkRlcHamGZmzrbY57OBW%252FVcgkOHyTK%252B%252FqFRjzmUn5mHEQKyXJd3kbR4ij7H67SkNxuz4b66WmdMv49ZsCHUrdFddtUo1VAPX1nlL%252BCbis3gk1HE29QVaZJgI2%252FuEp1RDDyl0RHfhrwy756J%252BFhd%252Foi2GZW6jwssWa9AluT1sI3yE%252FIL45FCToVCxLbYYa3tO7lmG0cuDumroxr9vdX0em2v2NH%252BD8y%252BR32iRSGYRIq%252Bcg0lm6btvf%252B7LAYDtj9ALjDR9XZTf%252F5A97azSqIdJBUCa5YF%252BhRNTgiGnVd9Z9LhcnWxL%252F4FvcH4OiUQJnzJRTb5rxXod8pGAog4HqxgU%253D#_=_][paper]] 
+DEADLINE: <2017-03-30 Thu 13:00> SCHEDULED: <2017-03-29 Wed>
 * BHIVE (archive)** Analysis
 *** HIV expression prediciton
 **** Run SVMs
