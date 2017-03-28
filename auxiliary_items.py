@@ -1,22 +1,15 @@
 # module of all personally defined auxiliary functions
 import numpy as np
 
-def create_class_labelling(condition,label):
-
+def create_masking_fun(condition):
+    
     if not callable(condition):
         store = locals() 
         to_execute = "condition = lambda x : {}".format(condition)
         exec to_execute in globals(),store
         condition = store["condition"]
-    
-    def class_labelling(x,no_label):
-        new_class_mask = condition(x) & no_label
-        no_label[new_class_mask] = False
-        return np.where(new_class_mask,float(label),x),no_label
-                                        
 
-
-    return class_labelling
+    return condition
 
 
 def linear_tail_compaction(array,p_object,fit = True):

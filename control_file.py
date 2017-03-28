@@ -9,7 +9,7 @@
 
 '''
 
-ml_method = "SVM"
+ML_estimator = "Log_C"
 
 ### Specify feature types to exclude from ML training ###
 feature_types_to_exclude_list = {
@@ -54,12 +54,12 @@ source = "data/Jurkat_hiv_{}_50kb.txt"
 
 
 ### Indicate target type and pointer to its selection and preprocessing object with any params ###
-'''
+
 target_type = {
     "name":"exp_ratio_bin",
     "params":{"threshold":3},
 }
-
+'''
 target_type = {
     "name":"exp_ratio_cont",
     "params":{},
@@ -69,16 +69,16 @@ target_type = {
     "name":"test_targets",
     "params":{},
 }
-'''
+
 target_type = {
     "name":"exp_ratio_multiclass",
     "params":{
-        "class_masks" : {
+        "classes" : {
             "low_exp_ratio" : ("x < 3",0),
             "medium_exp_ratio" :("(x >= 3) & (x < 5)",1),
             "high_exp_ratio" : ("x >= 5",2),
         },
     },
 }
-
+'''
 

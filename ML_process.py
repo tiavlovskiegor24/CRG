@@ -1,24 +1,5 @@
-'''
-from sklearn.ensemble import RandomForestClassifier,RandomForestRegressor,GradientBoostingRegressor
 
-from sklearn.tree import DecisionTreeRegressor,DecisionTreeClassifier
-
-from sklearn.neighbors import KNeighborsRegressor
-
-from sklearn.linear_model import LinearRegression,Lasso
-
-from sklearn.preprocessing import StandardScaler,MinMaxScaler,minmax_scale
-#from sklearn.linear_model import LogisticRegression
-
-from sklearn.svm import SVC
-
-
-from sklearn.metrics import classification_report
-
-from sklearn.pipeline import make_pipeline
-
-#from sklearn.decomposition import PCA, KernelPCA
-'''
+from sklearn import metrics
 from sklearn.model_selection import GridSearchCV
 
 
@@ -33,7 +14,8 @@ import ML_estimators
 
 def grid_search(clf,X,y,parameters,**kwargs):
     if parameters:
-        print "\n\tPerforming parameter grid search..."
+        print "\n\tPerforming parameter grid search on:\n\t{}".format(parameters)
+
     t = time()
     clf = GridSearchCV(clf, parameters,n_jobs = -1,**kwargs)
     clf.fit(X,y)
@@ -51,9 +33,9 @@ def grid_search(clf,X,y,parameters,**kwargs):
     return clf
 
 
-def run_ML(ML_inputs,estimator_name = "DTree_Regressor",parameters = None,by_groups = None,**kwargs):
-
-    estimator,default_parameters = ML_estimators.get_estimator(estimator_name)
+def run_ML(ML_inputs,estimator_name = None,parameters = None,by_groups = None,**kwargs):
+ 
+    estimator_name,estimator,default_parameters = ML_estimators.get_estimator(estimator_name)
     if estimator is None:
         print "Canceling..."
         return None
@@ -68,17 +50,16 @@ def run_ML(ML_inputs,estimator_name = "DTree_Regressor",parameters = None,by_gro
         "Data is not scaled to 0-1 range"
 
     
-
-    
     if by_groups is None:
 
-        print "\n\tRunning ML with {} ...".format(estimator_name)
+        print "\n\tRunning ML with '{}' ...".format(estimator_name)
 
         clf = estimator(**kwargs)
         
         clf = grid_search(clf,X,y,parameters)
 
         print "\n\tTrain score is {:.2f}".format(clf.score(X,y))
+        print metrics.classification_report(y,clf.predict(X))
 
         f,ax = myplot(y,clf.predict(X),style = ".",shape = (1,2),figsize = (14,7),sharey = True)
         ax[0].set_title("Train samples")
@@ -86,6 +67,7 @@ def run_ML(ML_inputs,estimator_name = "DTree_Regressor",parameters = None,by_gro
         
         X,y = ML_inputs.get_data("test")
         print "\n\tTest score is {:.2f}".format(clf.score(X,y))
+        print metrics.classification_report(y,clf.predict(X))
         ax[1].plot(y,clf.predict(X),".")
         ax[1].set_title("Test samples")
 

@@ -173,7 +173,7 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None):
         p_fun = f_types.feature_types[f_type]["preprocess"]
         if p_fun is not None:
             print "\n\tPreprocessing '{}' features".format(f_type)
-            p_fun = p_fun(cf.ml_method)
+            p_fun = p_fun(cf.ML_estimator)
             df.iloc[:,idx] = p_fun.fit_transform(df.iloc[:,idx].values,skip = False)
             df_test.iloc[:,idx] = p_fun.transform(df_test.iloc[:,idx].values)
             nan_samples = np.sum(np.isnan(df.iloc[:,idx].values),axis = 1).sum()

@@ -43,6 +43,9 @@ CLOSED: [2017-03-13 Mon 14:25] SCHEDULED: <2017-03-13 Mon>
 CLOSED: [2017-03-14 Tue 14:01]
 **** TODO Generate classification report for predictions on test dataset using best param classifier :bhive:ml_pipeline:
 SCHEDULED: <2017-03-23 Thu 12:00>
+
+***** TODO Return classification report only for classifiers
+SCHEDULED: <2017-03-29 Wed>
 **** DONE Include preprocessing functions for feature types in [[file:feature_types.py][feature_types]] :bhive:features:ds_processing:
 CLOSED: [2017-03-20 Mon 14:05] SCHEDULED: <2017-03-15 Wed 13:00>
 ***** DONE Hi-c features
@@ -173,7 +176,8 @@ CLOSED: [2017-03-27 Mon 17:20] SCHEDULED: <2017-03-20 Mon>
 SCHEDULED: <2017-03-28 Tue>
 **** TODO Run classifiers without 'distance features'
 SCHEDULED: <2017-03-24 Fri>
-
+**** TODO Run estimators with chip-c features only
+SCHEDULED: <2017-03-29 Wed>
 **** DONE Move target creation and preprocessing to feature_types
 CLOSED: [2017-03-23 Thu 17:02] SCHEDULED: <2017-03-23 Thu>
 stored in dictionary target_types

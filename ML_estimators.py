@@ -7,14 +7,14 @@ def get_estimator(estimator_name):
             estimator = ML_estimators[estimator_name]
             break
         else:
-            print "\t'{}' not in estimator list:\n{}"\
-                .format(estimator_name,enumerate(ML_estimators.keys()))
+            print "\t'{}' not in estimator list:\n\t{}"\
+                .format(estimator_name,ML_estimators.keys())
 
-            estimator_name = raw_input("Choose one from above (C to cancel):")
+            estimator_name = raw_input("\tChoose one from above (C to cancel):")
             if estimator_name == "C":
                 return None,None
 
-    return getattr(import_module(estimator["module"]),estimator["estimator"]),estimator["params"]
+    return estimator_name,getattr(import_module(estimator["module"]),estimator["estimator"]),estimator["params"]
 
 
 ML_estimators = {
@@ -71,15 +71,15 @@ ML_estimators = {
         "estimator":"SVC",
         "module":"sklearn.svm",
         "params":{
-            "C":(0.1,1,10),
-            "gamma":(0.01,.01,.1),
+            "C":(0.2,0.3,0.4),
+            "gamma":(0.008,0.01,0.012,),
         },
     },
 
 
     "kNN_R":{
         "estimator":"KNeighborsRegressor",
-        "module":"sklearn.neigbours",
+        "module":"sklearn.neighbors",
         "params":{
             "n_neighbors" : (1,5,10,30,100,),
             "weights" : ("uniform","distance",),
@@ -87,8 +87,6 @@ ML_estimators = {
     },
 
     
-
-
     "Linear_R":{
         "estimator":"LinearRegression",
         "module":"sklearn.linear_model",
@@ -104,4 +102,12 @@ ML_estimators = {
            "alpha":(1e-4,1e-3,1e-2,)
         },
     },
+
+    "Log_C":{
+        "estimator":"LogisticRegression",
+        "module":"sklearn.linear_model",
+        "params":{
+            "C":(1e-3,3e-3,1e-2,3e-2,1e-1,3e-1,1e0,3e0,1e1,3e1,1e2,3e2)
+        }
+    } 
 }
