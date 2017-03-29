@@ -43,7 +43,18 @@ ML_estimators = {
         "params":{
                 "max_features" : ("sqrt","auto",),
                 "min_samples_split" : (3,10,30,100,300),
-                "n_estimators" : (10,20,30),            
+                "n_estimators" : (30,),            
+        },
+    },
+
+
+    "RForest_MC":{
+        "estimator":"RandomForestClassifier",
+        "module":"sklearn.ensemble",
+        "params":{
+                "max_features" : ("sqrt","auto",),
+                "min_samples_split" : (3,10,30,100,300),
+                "n_estimators" : (30,),            
         },
     },
 
@@ -53,7 +64,7 @@ ML_estimators = {
         "params":{
                 "max_features" : ("sqrt","auto",),
                 "min_samples_split" : (3,10,30,100,300),
-                "n_estimators" : (10,20,30),            
+                "n_estimators" : (30,),            
         },
     },
 
@@ -99,7 +110,7 @@ ML_estimators = {
         "estimator":"Lasso",
         "module":"sklearn.linear_model",
         "params":{
-           "alpha":(1e-4,1e-3,1e-2,)
+           "alpha":(3e-5,1e-4,3e-4,1e-3,)
         },
     },
 
@@ -109,5 +120,13 @@ ML_estimators = {
         "params":{
             "C":(1e-3,3e-3,1e-2,3e-2,1e-1,3e-1,1e0,3e0,1e1,3e1,1e2,3e2)
         }
-    } 
+    },
+
+    "OneVsRest_MC":{
+        "estimator":"sklearn.multiclass",
+        "module":"OneVsRestClassifier",
+        "params":{
+            "base_estimator":"log_C",
+        }
+    },
 }

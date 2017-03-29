@@ -18,11 +18,13 @@ def linear_tail_compaction(array,p_object,fit = True):
     scale if inner region
     '''
     
-    m,n = array.shape
+    m = array.shape[0]
     inner_percentile_range = p_object.upper_percentile - p_object.lower_percentile
     
-    lower_value = np.nanpercentile(array,p_object.lower_percentile,axis = 0,keepdims = True)
-    upper_value = np.nanpercentile(array,p_object.upper_percentile,axis = 0,keepdims = True)
+    lower_value = np.nanpercentile(array,p_object.lower_percentile,axis = 0,keepdims = True,
+                                   interpolation = "higher")
+    upper_value = np.nanpercentile(array,p_object.upper_percentile,axis = 0,keepdims = True,
+                                   interpolation = "lower")
     inner_value_range = upper_value - lower_value
 
 
@@ -30,16 +32,26 @@ def linear_tail_compaction(array,p_object,fit = True):
     
 
     if fit:
-        p_object.lower_tail_scaling = (lower_value-np.nanmin(array,axis = 0,keepdims = True))\
+        if p_object.lower_percentile > 0:
+            p_object.lower_tail_scaling = (lower_value-np.nanmin(array,axis = 0,keepdims = True))\
                                       /(normal_percent_range*p_object.lower_percentile)
+
+        else:
+            p_object.lower_tail_scaling = (lower_value-np.nanmin(array,axis = 0,keepdims = True))\
+                                          /(normal_percent_range*1)
+
 
         # remove zeros
         p_object.lower_tail_scaling[p_object.lower_tail_scaling == 0] = 1.
 
-        
-        p_object.upper_tail_scaling = (np.nanmax(array,axis = 0,keepdims = True)-upper_value)\
+        if p_object.upper_percentile < 100:
+            p_object.upper_tail_scaling = (np.nanmax(array,axis = 0,keepdims = True)-upper_value)\
                                       /(normal_percent_range*(100-p_object.upper_percentile))
 
+        else:
+            p_object.upper_tail_scaling = (np.nanmax(array,axis = 0,keepdims = True)-upper_value)\
+                                      /(normal_percent_range*1)
+            
         #remove zeros
         p_object.upper_tail_scaling[p_object.upper_tail_scaling == 0] = 1.
 

@@ -34,20 +34,23 @@ def grid_search(clf,X,y,parameters,**kwargs):
 
 
 def run_ML(ML_inputs,estimator_name = None,parameters = None,by_groups = None,**kwargs):
- 
+
+    if estimator_name is None:
+        from control_file import ML_estimator as estimator_name
+        
     estimator_name,estimator,default_parameters = ML_estimators.get_estimator(estimator_name)
     if estimator is None:
         print "Canceling..."
         return None
 
-    if parameters is None:
+    if parameters is None or parameters == "default":
         parameters = default_parameters
     
     X,y = ML_inputs.get_data("train")
 
-
-    assert np.max(X) <= 1 and np.min(X) >= 0 and np.max(y) <= 1 and np.min(y) >= 0,\
-        "Data is not scaled to 0-1 range"
+    if estimator_name[-3:] != "_MC":
+        assert np.max(X) <= 1 and np.min(X) >= 0 and np.max(y) <= 1 and np.min(y) >= 0,\
+            "Data is not scaled to 0-1 range"
 
     
     if by_groups is None:
@@ -59,25 +62,32 @@ def run_ML(ML_inputs,estimator_name = None,parameters = None,by_groups = None,**
         clf = grid_search(clf,X,y,parameters)
 
         print "\n\tTrain score is {:.2f}".format(clf.score(X,y))
-        print metrics.classification_report(y,clf.predict(X))
 
-        f,ax = myplot(y,clf.predict(X),style = ".",shape = (1,2),figsize = (14,7),sharey = True)
-        ax[0].set_title("Train samples")
-        ax[0].set_ylabel("Predicted")
+        if estimator_name[-2:] == "_C" or estimator_name[-3:] == "_MC":
+            print metrics.classification_report(y,clf.predict(X))
+        elif estimator_name[-2:] == "_R":            
+            f,ax = myplot(y,clf.predict(X),style = ".",shape = (1,2),figsize = (14,7),sharey = True)
+            ax[0].set_title("Train samples")
+            ax[0].set_ylabel("Predicted")
+            ax[0].hlines(y.mean(),0,1)
         
         X,y = ML_inputs.get_data("test")
         print "\n\tTest score is {:.2f}".format(clf.score(X,y))
-        print metrics.classification_report(y,clf.predict(X))
-        ax[1].plot(y,clf.predict(X),".")
-        ax[1].set_title("Test samples")
 
-        for axis in ax: 
-            axis.set_xlabel("Observed")
-            axis.set(aspect='equal')
-            axis.set_xlim(xmin = -.01,xmax = 1.01)
-            axis.set_ylim(ymin = -.01,ymax = 1.01)
-            axis.grid(True)
-        f.tight_layout()
+        if estimator_name[-2:] == "_C":
+            print metrics.classification_report(y,clf.predict(X))
+        elif estimator_name[-2:] == "_R":
+            ax[1].plot(y,clf.predict(X),".")
+            ax[1].set_title("Test samples")
+            ax[1].hlines(y.mean(),0,1)
+        
+            for axis in ax: 
+                axis.set_xlabel("Observed")
+                axis.set(aspect='equal')
+                axis.set_xlim(xmin = -.01,xmax = 1.01)
+                axis.set_ylim(ymin = -.01,ymax = 1.01)
+                axis.grid(True)
+            f.tight_layout()
 
         return clf
     else:

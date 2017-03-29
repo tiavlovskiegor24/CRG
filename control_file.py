@@ -56,10 +56,16 @@ source = "data/Jurkat_hiv_{}_50kb.txt"
 ### Indicate target type and pointer to its selection and preprocessing object with any params ###
 
 target_type = {
+    "name":"test_targets",
+    "params":{
+        "source_target_type":"exp_ratio_cont",      
+    },
+}
+'''
+target_type = {
     "name":"exp_ratio_bin",
     "params":{"threshold":3},
 }
-'''
 target_type = {
     "name":"exp_ratio_cont",
     "params":{},

@@ -49,7 +49,7 @@ SCHEDULED: <2017-03-29 Wed>
 **** DONE Include preprocessing functions for feature types in [[file:feature_types.py][feature_types]] :bhive:features:ds_processing:
 CLOSED: [2017-03-20 Mon 14:05] SCHEDULED: <2017-03-15 Wed 13:00>
 ***** DONE Hi-c features
-CLOSED: [2017-03-16 Thu 16:56]
+CLOSED: [2017-03-29 Wed 16:06]
 ****** DONE GMFPT
 CLOSED: [2017-03-16 Thu 15:44]
 ****** DONE Row sum
@@ -177,6 +177,8 @@ SCHEDULED: <2017-03-28 Tue>
 **** DONE Move target creation and preprocessing to feature_types
 CLOSED: [2017-03-23 Thu 17:02] SCHEDULED: <2017-03-23 Thu>
 stored in dictionary target_types
+Random Forest is by default a multiclass
+
 **** TODO Run classifiers without 'distance features'
 SCHEDULED: <2017-03-24 Fri>
 **** TODO Run estimators with chip-c features only

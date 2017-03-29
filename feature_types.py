@@ -130,7 +130,7 @@ distance = {
 
 
 ########################### Hi-C features ########################################################
-from auxiliary_items import linear_tail_compaction
+import auxiliary_items as aux
 import numpy as np
 
 class gmfpt_preprocessing(object):
@@ -172,7 +172,7 @@ class gmfpt_preprocessing(object):
             # shrinking values in top and bottom tails
             print "\tShrinking top {}% and bottom {}% of samples"\
                 .format(self.upper_percentile,self.lower_percentile)
-            array = linear_tail_compaction(array,self,fit = True)
+            array = aux.linear_tail_compaction(array,self,fit = True)
             
             print "\tRescaling 'gmfpt' to 0-1 range"
             array = (array-self.min_value)/(self.max_value-self.min_value)
@@ -198,8 +198,7 @@ class gmfpt_preprocessing(object):
             array = np.log1p(array)
 
             # shrinking values in top and bottom tails
-            
-            array = linear_tail_compaction(array,self,fit = False)
+            array = aux.linear_tail_compaction(array,self,fit = False)
 
             #rescaling values to 0-1 range
             array = (array-self.min_value)/(self.max_value-self.min_value)
@@ -262,7 +261,7 @@ class contact_decay_preprocessing(object):
             # shrinking values in top and bottom tails
             print "\tShrinking top {}% and bottom {}% of samples"\
                 .format(self.upper_percentile,self.lower_percentile)
-            array = linear_tail_compaction(array,self,fit = True)
+            array = aux.linear_tail_compaction(array,self,fit = True)
 
             # rescaling values to 0-1 range
             print "\tRescaling values to 0-1 range"
@@ -301,7 +300,7 @@ class contact_decay_preprocessing(object):
         if self.ml_method not in []:
 
             # shrinking values in top and bottom tails        
-            array = linear_tail_compaction(array,self,fit = False)
+            array = aux.linear_tail_compaction(array,self,fit = False)
 
             # rescaling values to 0-1 range
             array = (array-self.min_value)/(self.max_value-self.min_value)
@@ -378,7 +377,7 @@ class row_sum_preprocessing(object):
             # shrinking values in top and bottom tails
             print "\tShrinking top {}% and bottom {}% of samples"\
                 .format(self.upper_percentile,self.lower_percentile)
-            array = linear_tail_compaction(array,self,fit = True)
+            array = aux.linear_tail_compaction(array,self,fit = True)
 
             # rescaling values to 0-1 range
             print "\tRescaling values to 0-1 range"
@@ -422,7 +421,7 @@ class row_sum_preprocessing(object):
             #array = np.log1p(array)
 
             # shrinking values in top and bottom tails
-            array = linear_tail_compaction(array,self,fit = False)
+            array = aux.linear_tail_compaction(array,self,fit = False)
 
             # rescaling values to 0-1 range
             array = (array-self.min_value)/(self.max_value-self.min_value)
@@ -491,7 +490,7 @@ class intra_inter_ratio_preprocessing(object):
             # shrinking values in top and bottom tails
             print "\tShrinking top {}% and bottom {}% of samples"\
                 .format(self.upper_percentile,self.lower_percentile)
-            array = linear_tail_compaction(array,self,fit = True)
+            array = aux.linear_tail_compaction(array,self,fit = True)
 
             # rescaling values to 0-1 range
             print "\tRescaling values to 0-1 range"
@@ -532,7 +531,7 @@ class intra_inter_ratio_preprocessing(object):
         if self.ml_method not in []:
             
             # shrinking values in top and bottom tails
-            array = linear_tail_compaction(array,self,fit = False)
+            array = aux.linear_tail_compaction(array,self,fit = False)
 
             # rescaling values to 0-1 range
             array = (array-self.min_value)/(self.max_value-self.min_value)
@@ -667,7 +666,7 @@ class chip_c_zb_r_preprocessing(object):
             # shrinking values in top and bottom tails
             print "\tShrinking top {}% and bottom {}% of samples"\
                 .format(self.upper_percentile,self.lower_percentile)
-            array = linear_tail_compaction(array,self,fit = True)
+            array = aux.linear_tail_compaction(array,self,fit = True)
 
             # rescaling values to 0-1 range
             print "\tRescaling values to 0-1 range"
@@ -696,7 +695,7 @@ class chip_c_zb_r_preprocessing(object):
         if self.ml_method not in []:
             
             # shrinking values in top and bottom tails
-            array = linear_tail_compaction(array,self,fit = False)
+            array = aux.linear_tail_compaction(array,self,fit = False)
 
             # rescaling values to 0-1 range
             array = (array-self.min_value)/(self.max_value-self.min_value)
@@ -755,9 +754,9 @@ class chip_c_hb_r_preprocessing(object):
             
             
             # shrinking values in top and bottom tails
-            print "\tShrinking top {}% and bottom {}% of samples"\
+            print "\tShrinking top {}% and bottom {}% of values"\
                 .format(self.upper_percentile,self.lower_percentile)
-            array = linear_tail_compaction(array,self,fit = True)
+            array = aux.linear_tail_compaction(array,self,fit = True)
 
             # rescaling values to 0-1 range
             print "\tRescaling values to 0-1 range"
@@ -787,7 +786,7 @@ class chip_c_hb_r_preprocessing(object):
         if self.ml_method not in []:
             
             # shrinking values in top and bottom tails
-            array = linear_tail_compaction(array,self,fit = False)
+            array = aux.linear_tail_compaction(array,self,fit = False)
 
             # rescaling values to 0-1 range
             array = (array-self.min_value)/(self.max_value-self.min_value)

@@ -43,7 +43,7 @@ class ML_inputs_tuple(object):
 
 
 
-def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None):
+def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose = True):
     # importing pipeline controls
     if cf is None:
         import control_file as cf
@@ -95,7 +95,8 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None):
 
     #enconde categorical features using one hot encoding
     step_tracker += 1
-    print "\n\n{}. Encoding categorical features".format(step_tracker)
+    if verbose:
+        print "\n\n{}. Encoding categorical features".format(step_tracker)
     cat_features = ["cat","strand"]
     df = dp.encode_one_hot(df,cat_features)
     df = dp.drop_features(df,cat_features)
@@ -120,7 +121,8 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None):
     #skip if feature is in features to exlude list
     #other wise store the feature as unrecognised and report to user
     step_tracker += 1
-    print "\n\n{}. Identifying features present in the dataset".format(step_tracker)
+    if verbose:
+        print "\n\n{}. Identifying features present in the dataset".format(step_tracker)
     f_type_indices = {}
     unrecognised_features = {}
     for i,feature_name in enumerate(feature_names):
@@ -144,16 +146,20 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None):
 
     for f_type in f_type_indices: 
         f_type_indices[f_type] = np.array(f_type_indices[f_type])
-        print "\n\t{} features of type '{}' are present".format(len(f_type_indices[f_type]),f_type)
+        if verbose:
+            print "\n\t{} features of type '{}' are present".format(len(f_type_indices[f_type]),f_type)
         if f_type in cf.feature_types_to_exclude_list:
-            print "\t\tExcluding feature type: '{}'".format(f_type)
+            if verbose:
+                print "\t\tExcluding feature type: '{}'".format(f_type)
             features_mask[f_type_indices[f_type]] = False
 
-    print "\n\tList of excluded individual features:\n\t{}"\
+    if verbose:
+        print "\n\tList of excluded individual features:\n\t{}"\
             .format(cf.features_to_exclude_list.keys())
 
     if unrecognised_features:
-        print "\n\tList of unrecognised features:\n\t{}"\
+        if verbose:
+            print "\n\tList of unrecognised features:\n\t{}"\
             .format(unrecognised_features.keys())
     else:
         del unrecognised_features
@@ -161,10 +167,15 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None):
     ML_inputs["feature_types"] = f_type_indices
     del f_type_indices
 
+    #display the left features
+    if verbose:
+        print "\n\tTotal of {} features left in dataset".format(features_mask.sum())
+
     
     # preprocess features of specific types
     step_tracker += 1
-    print "\n\n{}. Preprocessing feature type values".format(step_tracker)
+    if verbose:
+        print "\n\n{}. Preprocessing feature type values".format(step_tracker)
     preprocess_funcs = {}
     for f_type in ML_inputs["feature_types"]:
         if f_type in cf.feature_types_to_exclude_list:
@@ -172,13 +183,15 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None):
         idx = ML_inputs["feature_types"][f_type]
         p_fun = f_types.feature_types[f_type]["preprocess"]
         if p_fun is not None:
-            print "\n\tPreprocessing '{}' features".format(f_type)
+            if verbose:
+                print "\n\tPreprocessing '{}' features".format(f_type)
             p_fun = p_fun(cf.ML_estimator)
             df.iloc[:,idx] = p_fun.fit_transform(df.iloc[:,idx].values,skip = False)
             df_test.iloc[:,idx] = p_fun.transform(df_test.iloc[:,idx].values)
             nan_samples = np.sum(np.isnan(df.iloc[:,idx].values),axis = 1).sum()
             test_nan_samples = np.sum(np.isnan(df_test.iloc[:,idx].values),axis = 1).sum()
-            print "\t{} train and {} test  samples remaining with Nan values for '{}' features."\
+            if verbose:
+                print "\t{} train and {} test  samples remaining with Nan values for '{}' features."\
                 .format(nan_samples,test_nan_samples,f_type)
         preprocess_funcs[f_type] = p_fun
     del idx,p_fun,nan_samples,test_nan_samples
@@ -187,8 +200,9 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None):
     
     # get target values from the dataset
     step_tracker += 1
-    print "\n\n{}. Extracting target values".format(step_tracker)
-    print "\n\tUsing '{}' target type".format(cf.target_type["name"])
+    if verbose:
+        print "\n\n{}. Extracting target values".format(step_tracker)
+        print "\n\tUsing '{}' target type".format(cf.target_type["name"])
     targets_p_fun = t_types.target_types[cf.target_type["name"]](**cf.target_type["params"])
                                                       
     train_targets = targets_p_fun.fit_transform(df)
@@ -196,7 +210,8 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None):
 
     test_targets = targets_p_fun.transform(df_test)
     test_nan_targets = np.isnan(test_targets).ravel()
-    print "\n\t{} train and {} test targets remaining with Nan values".format(nan_targets.sum(),test_nan_targets.sum(),f_type)
+    if verbose:
+        print "\n\t{} train and {} test targets remaining with Nan values".format(nan_targets.sum(),test_nan_targets.sum(),f_type)
     
     ML_inputs["train_targets"] = train_targets
     ML_inputs["test_targets"] = test_targets
@@ -213,8 +228,9 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None):
     nan_samples = np.logical_or(nan_samples,nan_targets)
     test_nan_samples = (df_test.iloc[:,features_mask].isnull().values.sum(axis = 1) > 0).ravel()
     test_nan_samples = np.logical_or(test_nan_samples,test_nan_targets)
-    
-    print "\n\n{}. Excluding total of {} train and {} test samples with NaN entries"\
+
+    if verbose:
+        print "\n\n{}. Excluding total of {} train and {} test samples with NaN entries"\
         .format(step_tracker,nan_samples.sum(),test_nan_samples.sum())
     train_samples_mask = ~nan_samples
     test_samples_mask = ~test_nan_samples
@@ -242,7 +258,8 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None):
 
     #Converting dataset to numpy matrix
     step_tracker += 1
-    print "\n\n{}. Exctacting feature matrix".format(step_tracker)
+    if verbose:
+        print "\n\n{}. Exctacting feature matrix".format(step_tracker)
     train_samples = df.as_matrix()
     ML_inputs["train_samples"] = train_samples
 

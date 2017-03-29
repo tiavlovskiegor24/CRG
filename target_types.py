@@ -1,6 +1,7 @@
 #### Targets selection and preprocessing types
 import numpy as np
 import auxiliary_items as aux
+reload(aux)
 
 class in_dataset(object):
     '''
@@ -42,15 +43,27 @@ class exp_ratio_cont(object):
         import numpy as np
         # currently target values are assumed
         print "\n\tComputing the RNA/DNA expression ratio as our target values"
-        exp_ratio = (dataset["RNA"]*1.0/dataset["DNA"]).values
+        array = (dataset["RNA"]*1.0/dataset["DNA"]).values
 
         print "\n\tProblem is a regression with targets on a continuous scale"
         print "\n\tTaking the log of targets (expression ratio)"
-        array = np.log1p(exp_ratio)
+        array = np.log1p(array)
 
         self.max_value = np.nanmax(array,axis = 0,keepdims = True)
         self.min_value = np.nanmin(array,axis = 0,keepdims = True)
 
+
+        # processing outliers at the tails
+        self.lower_percentile = 0.
+        self.upper_percentile = 99.
+
+        
+        # shrinking values in top and bottom tails
+        print "\n\tShrinking top {}% and bottom {}% of samples"\
+            .format(self.upper_percentile,self.lower_percentile)
+        array = aux.linear_tail_compaction(array,self,fit = True)
+
+        
         print "\n\tRescaling the targets to 0-1 range"
         array = (array-self.min_value)/(self.max_value-self.min_value)
 
@@ -69,6 +82,11 @@ class exp_ratio_cont(object):
         exp_ratio = (dataset["RNA"]*1.0/dataset["DNA"]).values
         # taking log of expression ratio
         array = np.log1p(exp_ratio)
+
+        # shrinking values in top and bottom tails
+        array = aux.linear_tail_compaction(array,self,fit = False)
+
+        
         # scaling values to 0-1 range
         array = (array-self.min_value)/(self.max_value-self.min_value)
 
@@ -218,11 +236,33 @@ class test_targets(object):
         array = (array-self.min_value)/(self.max_value-self.min_value)
         return array
 
+
+    
+class test_randomised_targets(object):
+    def __init__(self,source_target_type,**kwargs):
+        self.source_target_type = target_types[source_target_type](**kwargs)
+        
+    def fit_transform(self,dataset):
+        array = self.source_target_type.fit_transform(dataset)
+        shuffled_array = np.random.permutation(array)
+        assert np.equal(np.sort(array),np.sort(shuffled_array)).all(),"shuffled targets are not identical"
+        return shuffled_array
+
+    def transform(self,dataset):
+
+        array = self.source_target_type.fit_transform(dataset)
+        shuffled_array = np.random.permutation(array)
+        assert np.equal(np.sort(array),np.sort(shuffled_array)).all(),"shuffled targets are not identical"
+        return shuffled_array
+
+
+
     
 target_types = {
     "exp_ratio_cont":exp_ratio_cont,
     "in_dataset":in_dataset,
     "exp_ratio_bin":exp_ratio_bin,
     "test_targets":test_targets,
+    "test_randomised_targets":test_randomised_targets,
     "exp_ratio_multiclass":exp_ratio_multiclass,
 }
