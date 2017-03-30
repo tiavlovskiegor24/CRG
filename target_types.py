@@ -7,20 +7,44 @@ class in_dataset(object):
     '''
     target are already in the dataset 
     '''
-    def __init__(self):
-        pass
-    
-    def fit_transform(self,dataset,column_name = 'targets'):
-
-        # takes the column  from dataset if in_dataset is true
+    def __init__(self,column_name = "control_targets"):
         self.column_name = column_name
-        array = dataset[self.column_name].values
+        
+    def fit_transform(self,dataset):
+        # takes the column from dataset
+        print "\n\tTaking '{}' column as targets".format(self.column_name)
+        array = dataset[self.column_name].values.ravel()
 
+        self.max_value = np.nanmax(array,axis = 0,keepdims = True)
+        self.min_value = np.nanmin(array,axis = 0,keepdims = True)
+
+
+        # processing outliers at the tails
+        self.lower_percentile = 1.
+        self.upper_percentile = 99.
+
+        
+        # shrinking values in top and bottom tails
+        print "\n\tShrinking top {}% and bottom {}% of samples"\
+            .format(self.upper_percentile,self.lower_percentile)
+        array = aux.linear_tail_compaction(array,self,fit = True)
+
+        
+
+        print "\n\tRescaling the targets to 0-1 range"
+        array = (array-self.min_value)/(self.max_value-self.min_value)
+        
         return array
 
 
-    def transform(self,dataset,in_dataset = False):
-        array = dataset[self.column_name]
+    def transform(self,dataset):
+        array = dataset[self.column_name].values.ravel()
+
+        # shrinking values in top and bottom tails
+        array = aux.linear_tail_compaction(array,self,fit = False)
+
+        
+        array = (array-self.min_value)/(self.max_value-self.min_value)
         return array
 
 

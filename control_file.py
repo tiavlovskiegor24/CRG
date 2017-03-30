@@ -41,6 +41,9 @@ features_to_exclude_list = {
     # possible features remaining from older versions of datasets 
     "pos_expr":None,
     "targets":None,
+    "strand":None,
+    "cat":None,
+    "control_targets":None,
     
 }
 

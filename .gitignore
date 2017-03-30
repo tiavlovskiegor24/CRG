@@ -43,6 +43,7 @@ Thumbs.db
 
 #ipython chekpoints #
 .ipynb_checkpoints/
+.ipynb
 
 
 # directories#

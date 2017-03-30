@@ -99,9 +99,7 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
         print "\n\n{}. Encoding categorical features".format(step_tracker)
     cat_features = ["cat","strand"]
     df = dp.encode_one_hot(df,cat_features)
-    df = dp.drop_features(df,cat_features)
     df_test = dp.encode_one_hot(df_test,cat_features)
-    df_test = dp.drop_features(df_test,cat_features)
 
     # get the final df shape
     m,n = df.shape # m - number of samples,n - number of features
@@ -146,11 +144,15 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
 
     for f_type in f_type_indices: 
         f_type_indices[f_type] = np.array(f_type_indices[f_type])
+
         if verbose:
             print "\n\t{} features of type '{}' are present".format(len(f_type_indices[f_type]),f_type)
+
         if f_type in cf.feature_types_to_exclude_list:
+
             if verbose:
                 print "\t\tExcluding feature type: '{}'".format(f_type)
+
             features_mask[f_type_indices[f_type]] = False
 
     if verbose:
@@ -170,7 +172,18 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
     #display the left features
     if verbose:
         print "\n\tTotal of {} features left in dataset".format(features_mask.sum())
-
+    
+    #creating syntetic control target
+    control_weights = 2*np.random.rand(features_mask.sum())-1
+    for cat,dataset in [("train",df),("test",df_test)]:
+        n = dataset.shape[1]
+        array = np.sum(dataset.as_matrix()[:,features_mask].astype(float) * control_weights,
+                       axis = 1)
+        dataset["control_targets"] = array
+    del control_weights
+        #dataset.to_csv("data/Jurkat_hiv_{}_50kb.txt".format(cat),sep="\t",index=False)        
+    #return
+    
     
     # preprocess features of specific types
     step_tracker += 1

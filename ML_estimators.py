@@ -82,8 +82,8 @@ ML_estimators = {
         "estimator":"SVC",
         "module":"sklearn.svm",
         "params":{
-            "C":(0.2,0.3,0.4),
-            "gamma":(0.008,0.01,0.012,),
+            "C":[1*(3**j)*(10**i) for i in range(-3,2) for j in [0,1]],
+            "gamma":[1*(3**j)*(10**i) for i in range(-3,2) for j in [0,1]],
         },
     },
 
