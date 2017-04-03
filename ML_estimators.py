@@ -14,7 +14,7 @@ def get_estimator(estimator_name):
             if estimator_name == "C":
                 return None,None
 
-    return estimator_name,getattr(import_module(estimator["module"]),estimator["estimator"]),estimator["params"]
+    return estimator_name,getattr(import_module(estimator["module"]),estimator["estimator"]),estimator["param_grid"]
 
 
 ML_estimators = {
@@ -22,7 +22,7 @@ ML_estimators = {
     "DTree_R":{
         "estimator":"DecisionTreeRegressor",
         "module":"sklearn.tree",
-        "params":{
+        "param_grid":{
             "max_features" : ("sqrt","auto",),
             "min_samples_split" : (3,10,30,100,300),
         },
@@ -31,7 +31,7 @@ ML_estimators = {
     "DTree_C":{
         "estimator":"DecisionTreeClassifier",
         "module":"sklearn.tree",
-        "params":{
+        "param_grid":{
             "max_features" : ("sqrt","auto",),
             "min_samples_split" : (3,10,30,100,300),
         },
@@ -40,7 +40,7 @@ ML_estimators = {
     "RForest_C":{
         "estimator":"RandomForestClassifier",
         "module":"sklearn.ensemble",
-        "params":{
+        "param_grid":{
                 "max_features" : ("sqrt","auto",),
                 "min_samples_split" : (3,10,30,100,300),
                 "n_estimators" : (30,),            
@@ -51,7 +51,7 @@ ML_estimators = {
     "RForest_MC":{
         "estimator":"RandomForestClassifier",
         "module":"sklearn.ensemble",
-        "params":{
+        "param_grid":{
                 "max_features" : ("sqrt","auto",),
                 "min_samples_split" : (3,10,30,100,300),
                 "n_estimators" : (30,),            
@@ -61,7 +61,7 @@ ML_estimators = {
     "RForest_R":{
         "estimator":"RandomForestRegressor",
         "module":"sklearn.ensemble",
-        "params":{
+        "param_grid":{
                 "max_features" : ("sqrt","auto",),
                 "min_samples_split" : (3,10,30,100,300),
                 "n_estimators" : (30,),            
@@ -71,7 +71,7 @@ ML_estimators = {
     "GradBoost_R":{
         "estimator":"GradientBoostingRegressor",
         "module":"sklearn.ensemble",
-        "params":{
+        "param_grid":{
             "n_estimators" : (100,300,500,),
             "loss" : ("ls","huber"),
             "max_depth":(1,3,10,),
@@ -81,17 +81,26 @@ ML_estimators = {
     "SV_C":{
         "estimator":"SVC",
         "module":"sklearn.svm",
-        "params":{
+        "param_grid":{
             "C":[1*(3**j)*(10**i) for i in range(-3,2) for j in [0,1]],
             "gamma":[1*(3**j)*(10**i) for i in range(-3,2) for j in [0,1]],
         },
     },
 
+    "SV_R":{
+        "estimator":"SVR",
+        "module":"sklearn.svm",
+        "param_grid":{
+            "C":[1*(3**j)*(10**i) for i in range(-3,2) for j in [0,1]],
+            "epsilon":[1*(3**j)*(10**i) for i in range(-3,2) for j in [0,1]],
+        },
+    },
+    
 
     "kNN_R":{
         "estimator":"KNeighborsRegressor",
         "module":"sklearn.neighbors",
-        "params":{
+        "param_grid":{
             "n_neighbors" : (1,5,10,30,100,),
             "weights" : ("uniform","distance",),
         },
@@ -101,7 +110,7 @@ ML_estimators = {
     "Linear_R":{
         "estimator":"LinearRegression",
         "module":"sklearn.linear_model",
-        "params":{
+        "param_grid":{
         },
     },
 
@@ -109,7 +118,7 @@ ML_estimators = {
     "Lasso_R":{
         "estimator":"Lasso",
         "module":"sklearn.linear_model",
-        "params":{
+        "param_grid":{
            "alpha":(3e-5,1e-4,3e-4,1e-3,)
         },
     },
@@ -117,7 +126,7 @@ ML_estimators = {
     "Log_C":{
         "estimator":"LogisticRegression",
         "module":"sklearn.linear_model",
-        "params":{
+        "param_grid":{
             "C":(1e-3,3e-3,1e-2,3e-2,1e-1,3e-1,1e0,3e0,1e1,3e1,1e2,3e2)
         }
     },
@@ -125,7 +134,7 @@ ML_estimators = {
     "OneVsRest_MC":{
         "estimator":"sklearn.multiclass",
         "module":"OneVsRestClassifier",
-        "params":{
+        "param_grid":{
             "base_estimator":"log_C",
         }
     },

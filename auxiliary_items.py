@@ -1,6 +1,17 @@
 # module of all personally defined auxiliary functions
 import numpy as np
 
+def get_sample_weights(dataset,samples_mask):
+    array = (dataset["RNA"]*1.0/dataset["DNA"]).values[samples_mask]
+    array = np.log1p(array)
+
+    mask = np.isfinite(array) & (array > 0)
+    #array[mask] = np.log1p(1/array[mask])
+    array[mask] = 1/array[mask]
+    array[~mask] = 1
+    print mask.sum()
+    return array
+
 def create_masking_fun(condition):
     
     if not callable(condition):

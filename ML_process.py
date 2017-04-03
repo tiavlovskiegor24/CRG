@@ -12,12 +12,13 @@ from myplot import myplot
 import ML_estimators
 
 
-def grid_search(clf,X,y,parameters,**kwargs):
-    if parameters:
-        print "\n\tPerforming parameter grid search on:\n\t{}".format(parameters)
+def grid_search(clf,X,y,param_grid,**kwargs):
+    if param_grid:
+        print "\n\tPerforming parameter grid search on:\n\t{}".format(param_grid)
 
     t = time()
-    clf = GridSearchCV(clf, parameters,n_jobs = -1,**kwargs)
+    #print kwargs
+    clf = GridSearchCV(clf, param_grid = param_grid,n_jobs = -1,**kwargs)
     clf.fit(X,y)
     print "\n\t\tTime taken:{:.2f}".format(time()-t)
     if clf.best_params_:
@@ -33,18 +34,18 @@ def grid_search(clf,X,y,parameters,**kwargs):
     return clf
 
 
-def run_ML(ML_inputs,estimator_name = None,parameters = None,by_groups = None,**kwargs):
+def run_ML(ML_inputs,estimator_name = None,param_grid = None,by_groups = None,fit_params = None,**kwargs):
 
     if estimator_name is None:
         from control_file import ML_estimator as estimator_name
         
-    estimator_name,estimator,default_parameters = ML_estimators.get_estimator(estimator_name)
+    estimator_name,estimator,default_param_grid = ML_estimators.get_estimator(estimator_name)
     if estimator is None:
         print "Canceling..."
         return None
 
-    if parameters is None or parameters == "default":
-        parameters = default_parameters
+    if param_grid is None or param_grid == "default":
+        param_grid = default_param_grid
     
     X,y = ML_inputs.get_data("train")
 
@@ -58,10 +59,19 @@ def run_ML(ML_inputs,estimator_name = None,parameters = None,by_groups = None,**
         print "\n\tRunning ML with '{}' ...".format(estimator_name)
 
         clf = estimator(**kwargs)
-        
-        clf = grid_search(clf,X,y,parameters)
 
-        print "\n\tTrain score is {:.2f}".format(clf.score(X,y))
+        #temporary giving weights to sampels
+        if fit_params is not None:    
+            fit_params = {
+                "sample_weight" : ML_inputs["train_sample_weight"],
+            }
+        
+        
+        
+        clf = grid_search(clf,X,y,param_grid,fit_params = fit_params)
+
+        print "\n\tTrain score is {:.2f}".format(clf.best_estimator_.score(X,y,sample_weight = \
+                                                          ML_inputs["train_sample_weight"]))
 
         if estimator_name[-2:] == "_C" or estimator_name[-3:] == "_MC":
             print metrics.classification_report(y,clf.predict(X))
@@ -72,7 +82,9 @@ def run_ML(ML_inputs,estimator_name = None,parameters = None,by_groups = None,**
             ax[0].hlines(y.mean(),0,1)
         
         X,y = ML_inputs.get_data("test")
-        print "\n\tTest score is {:.2f}".format(clf.score(X,y))
+        
+        print "\n\tTest score is {:.2f}".format(clf.best_estimator_.score(X,y,sample_weight = \
+                                                          ML_inputs["test_sample_weight"]))
 
         if estimator_name[-2:] == "_C":
             print metrics.classification_report(y,clf.predict(X))

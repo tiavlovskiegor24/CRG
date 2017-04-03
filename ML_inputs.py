@@ -5,7 +5,7 @@ from collections import namedtuple
 import dataset_processing as dp
 from feature_file_processing import read_feature_file, full_array
 from myplot import myplot
-
+import auxiliary_items as aux
 
 
 class ML_inputs_tuple(object):
@@ -68,11 +68,13 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
     ML_inputs = dict(filename = None,
                      train_samples = None,test_samples = None,
                      train_targets = None,test_targets = None,
+                     train_sample_weight = None,test_sample_weight = None,
                      train_sample_groups = None,test_sample_groups = None,
                      feature_names = None,
                      feature_types = None,
                      mask = None,
-                     preprocessing = None)
+                     preprocessing = None,
+    )
     
     if dataset is None:
         #read the dataframe from file
@@ -286,6 +288,13 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
         "features_mask" : np.array(features_mask),
         
         })
+
+    if cf.sample_weights:
+        step_tracker += 1
+        if verbose:
+            print "\n\n{}. Including sample weights".format(step_tracker)
+        ML_inputs["train_sample_weight"] = aux.get_sample_weights(df,train_samples_mask)
+        ML_inputs["test_sample_weight"] = aux.get_sample_weights(df_test,test_samples_mask)
 
 
     ML_inputs["preprocessing"] = preprocess_funcs

@@ -55,14 +55,7 @@ class exp_ratio_cont(object):
     def __init__(self):
         pass
     
-    def fit_transform(self,dataset,in_dataset = False):
-
-        # takes the column 'targets' from dataset if in_dataset is true
-        if in_dataset:
-            array = dataset["targets"].values
-            return array
-
-        # otherwise targets are computed from scratch
+    def fit_transform(self,dataset):
 
         import numpy as np
         # currently target values are assumed
@@ -93,14 +86,8 @@ class exp_ratio_cont(object):
 
         return array
 
-    def transform(self,dataset,in_dataset = False):
+    def transform(self,dataset):
         import numpy as np
-        # takes the column 'targets' from dataset if in_dataset is true
-        if in_dataset:
-            array = dataset["targets"].values
-            return array
-
-        # otherwise targets are computed from scratch
 
         #computing the expression ration
         exp_ratio = (dataset["RNA"]*1.0/dataset["DNA"]).values
