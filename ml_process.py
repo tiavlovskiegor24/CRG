@@ -34,7 +34,7 @@ def grid_search(clf,X,y,param_grid,**kwargs):
     return clf
 
 
-def run_ML(ML_inputs,estimator_name = None,param_grid = None,by_groups = None,fit_params = None,**kwargs):
+def run_ML(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None,fit_params = None,**kwargs):
 
     if estimator_name is None:
         from control_file import ML_estimator as estimator_name
@@ -61,7 +61,7 @@ def run_ML(ML_inputs,estimator_name = None,param_grid = None,by_groups = None,fi
         clf = estimator(**kwargs)
 
         #temporary giving weights to sampels
-        if fit_params is not None:    
+        if cf.sample_weights:    
             fit_params = {
                 "sample_weight" : ML_inputs["train_sample_weight"],
             }

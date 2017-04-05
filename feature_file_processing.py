@@ -67,7 +67,7 @@ def full_array(array,res = None,fill_value = np.nan):
             f_array = np.array(zip([chrom for i in xrange(n)],\
                                    np.arange(n)*res,\
                                    np.arange(1,n+1)*res,\
-                                   np.ones(n)*np.nan),\
+                                   np.ones(n)*fill_value),\
                                dtype=array[chrom].dtype)
 
             f_array["value"][bins] = array[chrom]["value"]
@@ -80,6 +80,16 @@ def full_array(array,res = None,fill_value = np.nan):
         '''
         
     return array
+
+def ravel_feature_data(data):
+    out = None
+    for chrom in data:
+        if out is not None:
+            out = np.concatenate((out,data[chrom]),axis = 0)
+        else:
+            out = data[chrom]
+    return out
+        
 
 def get_chrom_sizes(dir = None):
     if dir is None:
