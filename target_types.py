@@ -7,8 +7,10 @@ class in_dataset(object):
     '''
     target are already in the dataset 
     '''
-    def __init__(self,column_name = "control_targets"):
+    def __init__(self,column_name = "control_targets",tail_compaction = None):
         self.column_name = column_name
+        if tail_compaction is not None:
+            self.lower_percentile,self.upper_percentile = tail_compaction
         
     def fit_transform(self,dataset):
         # takes the column from dataset
@@ -18,16 +20,13 @@ class in_dataset(object):
         self.max_value = np.nanmax(array,axis = 0,keepdims = True)
         self.min_value = np.nanmin(array,axis = 0,keepdims = True)
 
+        if hasattr(self,"upper_percentile") and hasattr(self,"lower_percentile"):
+            # processing outliers at the tails
 
-        # processing outliers at the tails
-        self.lower_percentile = 1.
-        self.upper_percentile = 99.
-
-        
-        # shrinking values in top and bottom tails
-        print "\n\tShrinking top {}% and bottom {}% of samples"\
-            .format(self.upper_percentile,self.lower_percentile)
-        array = aux.linear_tail_compaction(array,self,fit = True)
+            # shrinking values in top and bottom tails
+            print "\n\tShrinking top {}% and bottom {}% of samples"\
+                .format(self.upper_percentile,self.lower_percentile)
+            array = aux.linear_tail_compaction(array,self,fit = True)
 
         
 
@@ -39,9 +38,10 @@ class in_dataset(object):
 
     def transform(self,dataset):
         array = dataset[self.column_name].values.ravel()
-
-        # shrinking values in top and bottom tails
-        array = aux.linear_tail_compaction(array,self,fit = False)
+        
+        if hasattr(self,"upper_percentile") and hasattr(self,"lower_percentile"):
+            # shrinking values in top and bottom tails
+            array = aux.linear_tail_compaction(array,self,fit = False)
 
         
         array = (array-self.min_value)/(self.max_value-self.min_value)

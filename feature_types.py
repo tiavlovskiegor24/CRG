@@ -55,6 +55,14 @@ feature_type_name =  {
 }
 '''
 
+class feature_type(object):
+    def __init__(self,ml_method,tail_compaction = None,**kwargs):
+        self.ml_method = ml_method
+
+        if tail_compaction is not None:
+            self.lower_percentile,self.upper_percentile = tail_compaction
+
+    def fit_transform(self,array,skip = False)
 
 class distance_preprocessing(object):
 

@@ -18,27 +18,11 @@ feature_types_to_exclude_list = {
 
 ### Specify individual features to exclude from ML training ###
 features_to_exclude_list = {
-    # list of certain features to exlude
-    'brcd':None,
-    'pos':None,
-    'gene_name':None,
-    "rep":None,
-    "expr":None,
-    "nread":None,
-    "mapq":None,
-    "chrom":None,
-    "RNA":None,
-    "DNA":None,
-    "strand_oh__+":None,
-    "cat_oh__SG":None,
-
-    # possible features remaining from older versions of datasets 
-    "pos_expr":None,
-    "targets":None,
-    "strand":None,
-    "cat":None,
-    "control_targets":None,
-    
+    "bin",
+    "chrom",
+    "integ_density",
+    "control_targets",
+    "gmfpt",
 }
 
 
@@ -46,44 +30,25 @@ features_to_exclude_list = {
 
 sample_groups = ["chrom"]
 
+#### Select a particlular group of samples from the full dataset ####
+select_sample_group = {
+    "chrom":"chr19",
+}
+
 ### Include whether to consider sample weights in optimisation ####
 sample_weights = False
 
 ### Specify Dataset location ###
-source = "data/Jurkat_hiv_{}_50kb.txt"
+source = "data/hiv_integration_{}_50kb.txt"
 
 
 ### Indicate target type and pointer to its selection and preprocessing object with any params ###
-'''
+
 target_type = {
-    "name":"test_targets",
+    "name":"in_dataset",
     "params":{
-        "source_target_type":"exp_ratio_cont",      
+        "column_name":"gmfpt",
+        "tail_compaction":None,
     },
 }
 
-target_type = {
-    "name":"exp_ratio_bin",
-    "params":{"threshold":3},
-}
-'''
-target_type = {
-    "name":"exp_ratio_cont",
-    "params":{},
-}
-'''
-target_type = {
-    "name":"test_targets",
-    "params":{},
-}
-
-target_type = {
-    "name":"exp_ratio_multiclass",
-    "params":{
-        "classes" : {
-            "low_exp_ratio" : ("x < 3",0),
-            "medium_exp_ratio" :("(x >= 3) & (x < 5)",1),
-            "high_exp_ratio" : ("x >= 5",2),
-        },
-    },
-}

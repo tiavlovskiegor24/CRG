@@ -13,11 +13,11 @@ ML_estimator = "Log_C"
 
 ### Specify feature types to exclude from ML training ###
 feature_types_to_exclude_list = {
-    "chip_c_hb" : None,
+    "chip_c_hb",
     #"chip_c_hb_r" : None,
-    "chip_c_zb" : None,
+    "chip_c_zb",
     #"chip_c_zb_r" : None,
-    "categorical": None,
+    "categorical",
     #"distance":None,
     
 }
@@ -25,26 +25,32 @@ feature_types_to_exclude_list = {
 ### Specify individual features to exclude from ML training ###
 features_to_exclude_list = {
     # list of certain features to exlude
-    'brcd':None,
-    'pos':None,
-    'gene_name':None,
-    "rep":None,
-    "expr":None,
-    "nread":None,
-    "mapq":None,
-    "chrom":None,
-    "RNA":None,
-    "DNA":None,
-    "strand_oh__+":None,
-    "cat_oh__SG":None,
+    'brcd',
+    'pos',
+    'gene_name',
+    "rep",
+    "expr",
+    "nread",
+    "mapq",
+    "chrom",
+    "RNA",
+    "DNA",
+    "strand_oh__+",
+    "cat_oh__SG",
 
     # possible features remaining from older versions of datasets 
-    "pos_expr":None,
-    "targets":None,
-    "strand":None,
-    "cat":None,
-    "control_targets":None,
+    "pos_expr",
+    "targets",
+    "strand",
+    "cat",
+    "control_targets",
     
+}
+
+### set of categorical features to encode using one-hot encoding
+one_hot_features = {
+    "cat",
+    "strand",
 }
 
 

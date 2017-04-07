@@ -95,13 +95,23 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
     # Track the steps of the routine
     step_tracker = 0
 
+    # select specific group of samples from the full dataset
+    if hasattr(cf,"select_sample_group"):
+        if cf.select_sample_group:
+            step_tracker += 1
+            for col,val in cf.select_sample_group.iteritems():
+                df = df[df[col] == val]
+                df_test = df_test[df_test[col] == val]
+                if verbose:
+                    print "\n\n{}. Selecting a sample group '{}'='{}'".format(step_tracker,col,val)
+
     #enconde categorical features using one hot encoding
-    step_tracker += 1
-    if verbose:
-        print "\n\n{}. Encoding categorical features".format(step_tracker)
-    cat_features = ["cat","strand"]
-    df = dp.encode_one_hot(df,cat_features)
-    df_test = dp.encode_one_hot(df_test,cat_features)
+    if hasattr(cf,"one_hot_features"):
+        step_tracker += 1
+        if verbose:
+            print "\n\n{}. Encoding categorical features".format(step_tracker)
+        df = dp.encode_one_hot(df,cf.one_hot_features)
+        df_test = dp.encode_one_hot(df_test,one_hot_features)
 
     # get the final df shape
     m,n = df.shape # m - number of samples,n - number of features
@@ -159,7 +169,7 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
 
     if verbose:
         print "\n\tList of excluded individual features:\n\t{}"\
-            .format(cf.features_to_exclude_list.keys())
+            .format([i for i in cf.features_to_exclude_list])
 
     if unrecognised_features:
         if verbose:

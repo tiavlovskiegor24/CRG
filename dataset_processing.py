@@ -60,7 +60,7 @@ def create_full_hiv_integ_dataset(newfilename,res = "50kb",train_test = True):
     print data
     
     df = pd.DataFrame()
-    df["bins"] = (data["bin_start"]/resolution[res]).astype(int)
+    df["bin"] = (data["bin_start"]/resolution[res]).astype(int)
     df["integ_density"] = data["value"]
     df["chrom"] = data["chrom"]
     print df.head()
@@ -76,14 +76,16 @@ def create_full_hiv_integ_dataset(newfilename,res = "50kb",train_test = True):
     }
     
     
-    df = import_features(df,"bins",res,directory,feature_filenames)    
+    df = import_features(df,"bin",res,directory,feature_filenames)    
 
     # get chromosome indices
     chrom_sort = {}
     for chrom in df["chrom"].unique():
         chrom_sort[chrom] = np.where(df["chrom"] == chrom)[0]
 
-
+    # adding control_targets column
+    df["control_targets"] = np.sum(df[["gmfpt","row_sum","contact_decay"]].values,axis = 1)
+        
     if train_test:
         #split in train and test uniformly from each chromosome
         print "\nSpliting into train and test and saving the datasets"
@@ -130,10 +132,13 @@ def train_test_split(df,train_f = 0.9,chrom_sort = None):
 def import_features(df,map_col = "pos",res = "",directory = None,feature_filenames = None):
     resolution = {'100kb': 100000, '10kb': 10000, '500kb': 50000, '50kb': 50000,"":None}
 
-    if map_col == "bins":
+    if map_col == "bin":
         bins = df[map_col].values.astype(np.int)
-    else:
+    elif map_col == "pos":
         bins = (df[map_col]/resolution[res]).astype(np.int).values
+    else:
+        print "INvalid mapping column name"
+        return
 
     for feature in feature_filenames:
         #print "Computing feature: %s"%feature

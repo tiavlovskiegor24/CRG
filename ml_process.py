@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from myplot import myplot
-import ML_estimators
+import ml_estimators
 
 
 def grid_search(clf,X,y,param_grid,**kwargs):
@@ -39,7 +39,7 @@ def run_ML(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None
     if estimator_name is None:
         from control_file import ML_estimator as estimator_name
         
-    estimator_name,estimator,default_param_grid = ML_estimators.get_estimator(estimator_name)
+    estimator_name,estimator,default_param_grid = ml_estimators.get_estimator(estimator_name)
     if estimator is None:
         print "Canceling..."
         return None
