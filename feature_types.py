@@ -55,26 +55,26 @@ feature_type_name =  {
 }
 '''
 
-class feature_type(object):
-    def __init__(self,ml_method,tail_compaction = None,**kwargs):
+class feature_type_class(object):
+    def __init__(self,ml_method,skip=False,tail_compaction = None):
         self.ml_method = ml_method
+        self.skip = skip
 
         if tail_compaction is not None:
             self.lower_percentile,self.upper_percentile = tail_compaction
 
-    def fit_transform(self,array,skip = False)
 
-class distance_preprocessing(object):
 
-    def __init__(self,ml_method):
+class distance_preprocessing(feature_type_class):
 
-        self.ml_method = ml_method
+    def __init__(self,**kwargs):
+        super(distance_preprocessing,self).__init__(**kwargs)
 
     def fit_transform(self,array,skip = False):
         #method for extracting scaling parameters from train set and tranforming
         # the train set
-
-        self.skip = skip
+        if not hasattr(self,'skip'):
+            self.skip = skip
         
         if self.skip: 
             print "\tSkipping the preprocessing of 'distance' features"
@@ -141,17 +141,15 @@ distance = {
 import auxiliary_items as aux
 import numpy as np
 
-class gmfpt_preprocessing(object):
+class gmfpt_preprocessing(feature_type_class):
 
-    def __init__(self,ml_method):
+    def __init__(self,**kwargs):
 
-        self.ml_method = ml_method
+        super(gmfpt_preprocessing,self).__init__(**kwargs)
 
-    def fit_transform(self,array,skip = False):
+    def fit_transform(self,array):
         #method for extracting scaling parameters from train set and tranforming
         # the train set
-
-        self.skip = skip
         
         if self.skip: 
             print "\tSkipping the preprocessing of 'gmfpt' features"
@@ -167,11 +165,13 @@ class gmfpt_preprocessing(object):
             
             print "\tApplying log1p to 'gmfpt' values"
             array = np.log1p(array)
-
+            
             # processing outliers at the tails
-            self.lower_percentile = 2.
-            self.upper_percentile = 98.
 
+            if not hasattr(self,"lower_percentile"):
+                self.lower_percentile = 2.
+                self.upper_percentile = 98.
+            
             #default scaling values
             self.min_value = np.nanmin(array,axis = 0,keepdims = True)
             self.max_values = np.nanmax(array,axis = 0,keepdims = True)
@@ -233,17 +233,16 @@ gmfpt = {
 
 ### contact decay feature ####
 
-class contact_decay_preprocessing(object):
+class contact_decay_preprocessing(feature_type_class):
 
-    def __init__(self,ml_method):
+    def __init__(self,**kwargs):
 
-        self.ml_method = ml_method
+        super(contact_decay_preprocessing,self).__init__(**kwargs)
 
-    def fit_transform(self,array,skip = False):
+
+    def fit_transform(self,array):
         #method for extracting scaling parameters from train set and tranforming
         # the train set
-
-        self.skip = skip
         
         if self.skip: 
             print "\tSkipping the preprocessing of 'contact_decay' features"
@@ -256,11 +255,11 @@ class contact_decay_preprocessing(object):
         #Leave Nans and get_ML_inputs will take care of them
 
         if self.ml_method not in []:
-
             # processing outliers at the tails
-            self.lower_percentile = 1.
-            self.upper_percentile = 99.
-
+            if not hasattr(self,"lower_percentile"):
+                self.lower_percentile = 1.
+                self.upper_percentile = 99.
+                
             #default scaling values
             self.min_value = np.nanmin(array,axis = 0,keepdims = True)
             self.max_values = np.nanmax(array,axis = 0,keepdims = True)
@@ -345,17 +344,18 @@ contact_decay = {
 
 
 ### row sum feature ####
-class row_sum_preprocessing(object):
+class row_sum_preprocessing(feature_type_class):
 
-    def __init__(self,ml_method):
+    def __init__(self,**kwargs):
 
-        self.ml_method = ml_method
+        super(row_sum_preprocessing,self).__init__(**kwargs)
 
-    def fit_transform(self,array,skip = False):
+    
+    def fit_transform(self,array):
         #method for extracting scaling parameters from train set and tranforming
         # the train set
 
-        self.skip = skip
+        
         
         if self.skip: 
             print "\tSkipping the preprocessing of 'row_sum' features"
@@ -372,11 +372,14 @@ class row_sum_preprocessing(object):
 
             #print "\tApplying log1p to 'row_sum' values"
             #array = np.log1p(array)
-
+            
+            
             # processing outliers at the tails
-            self.lower_percentile = 1.
-            self.upper_percentile = 99.
-
+            if not hasattr(self,"lower_percentile"):
+                self.lower_percentile = 1.
+                self.upper_percentile = 99.
+            
+            
             #default scaling values
             self.min_value = np.nanmin(array,axis = 0,keepdims = True)
             self.max_values = np.nanmax(array,axis = 0,keepdims = True)
@@ -461,17 +464,16 @@ row_sum = {
 }
 
 ###### intra_inter_contact ratio
-class intra_inter_ratio_preprocessing(object):
+class intra_inter_ratio_preprocessing(feature_type_class):
 
-    def __init__(self,ml_method):
+    def __init__(self,**kwargs):
 
-        self.ml_method = ml_method
+        super(intra_inter_ratio_preprocessing,self).__init__(**kwargs)
 
-    def fit_transform(self,array,skip = False):
+
+    def fit_transform(self,array):
         #method for extracting scaling parameters from train set and tranforming
         # the train set
-
-        self.skip = skip
         
         if self.skip: 
             print "\tSkipping the preprocessing of 'intra_inter_ratio_preprocessing' features"
@@ -487,8 +489,9 @@ class intra_inter_ratio_preprocessing(object):
         if self.ml_method not in []:
 
             # processing outliers at the tails
-            self.lower_percentile = 1.
-            self.upper_percentile = 99.
+            if not hasattr(self,"lower_percentile"):
+                self.lower_percentile = 1.
+                self.upper_percentile = 99.
 
             #default scaling values
             self.min_value = np.nanmin(array,axis = 0,keepdims = True)
@@ -573,17 +576,16 @@ intra_inter_ratio = {
 
 ### ab_score ######
 
-class ab_score_preprocessing(object):
+class ab_score_preprocessing(feature_type_class):
 
-    def __init__(self,ml_method):
+    def __init__(self,**kwargs):
 
-        self.ml_method = ml_method
+        super(ab_score_preprocessing,self).__init__(**kwargs)
 
-    def fit_transform(self,array,skip = False):
+    
+    def fit_transform(self,array):
         #method for extracting scaling parameters from train set and tranforming
         # the train set
-
-        self.skip = skip
         
         if self.skip: 
             print "\tSkipping the preprocessing of 'ab_score' features"
@@ -637,17 +639,16 @@ ab_score = {
 
 #### Chip-C features preprocessing ####
 
-class chip_c_zb_r_preprocessing(object):
+class chip_c_zb_r_preprocessing(feature_type_class):
 
-    def __init__(self,ml_method):
+    def __init__(self,**kwargs):
 
-        self.ml_method = ml_method
+        super(chip_c_zb_r_preprocessing,self).__init__(**kwargs)
 
-    def fit_transform(self,array,skip = False):
+
+    def fit_transform(self,array):
         #method for extracting scaling parameters from train set and tranforming
         # the train set itself
-
-        self.skip = skip
         
         if self.skip: 
             print "\tSkipping the preprocessing of 'chip_c_zb_r' features"
@@ -667,8 +668,9 @@ class chip_c_zb_r_preprocessing(object):
             self.max_values = np.nanmax(array,axis = 0,keepdims = True)
             
             # processing outliers at the tails
-            self.lower_percentile = 1.
-            self.upper_percentile = 99.
+            if not hasattr(self,"lower_percentile"):
+                self.lower_percentile = 1.
+                self.upper_percentile = 99.
 
             
             # shrinking values in top and bottom tails
@@ -727,12 +729,13 @@ chip_c_zb_r = {
         
     }
 
-class chip_c_hb_r_preprocessing(object):
+class chip_c_hb_r_preprocessing(feature_type_class):
 
-    def __init__(self,ml_method):
+    def __init__(self,**kwargs):
 
-        self.ml_method = ml_method
+        super(chip_c_hb_r_preprocessing,self).__init__(**kwargs)
 
+    
     def fit_transform(self,array,skip = False):
         #method for extracting scaling parameters from train set and tranforming
         # the train set itself
@@ -753,8 +756,9 @@ class chip_c_hb_r_preprocessing(object):
         if self.ml_method not in []:
 
             # processing outliers at the tails
-            self.lower_percentile = 1.
-            self.upper_percentile = 99.
+            if not hasattr(self,"lower_percentile"):
+                self.lower_percentile = 1.
+                self.upper_percentile = 99.
 
             #default scaling values
             self.min_value = np.nanmin(array,axis = 0,keepdims = True)

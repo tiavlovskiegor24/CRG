@@ -16,14 +16,14 @@ class ML_inputs_tuple(object):
     def __getitem__(self,key):
         return getattr(self.data,key)
 
-    def get_data(self,train_or_test = "train",mask = True):
+    def get_data(self,train_or_test = "train",masked = True):
         
-        if not mask:
-            confirm = raw_input("Are you sure you want to get non-masked data?(Y/n)\n Some samples may contain Nans and some columns may not be suitable for Machine Learning")
-            if confirm == "Y":
-                samples = getattr(self.data,"{}_samples".format(train_or_test))
-                targets = getattr(self.data,"{}_targets".format(train_or_test))
-                return samples,targets
+        if masked:
+            #confirm = raw_input("Are you sure you want to get non-masked data?(Y/n)\n Some samples may contain Nans and some columns may not be suitable for Machine Learning")
+            #if confirm == "Y":
+            samples = getattr(self.data,"{}_samples".format(train_or_test))
+            targets = getattr(self.data,"{}_targets".format(train_or_test))
+            return samples,targets
             
         #print "\tReturning masked '{}' data".format(train_or_test)
         masks = getattr(self.data,"mask")
@@ -99,11 +99,16 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
     if hasattr(cf,"select_sample_group"):
         if cf.select_sample_group:
             step_tracker += 1
-            for col,val in cf.select_sample_group.iteritems():
-                df = df[df[col] == val]
-                df_test = df_test[df_test[col] == val]
+            if verbose:
+                print "\n\n{}. Selecting a sample group".format(step_tracker)
+
+            for col,condition in cf.select_sample_group.iteritems():
                 if verbose:
-                    print "\n\n{}. Selecting a sample group '{}'='{}'".format(step_tracker,col,val)
+                    print "\n\t '{}'{}".format(col,condition.strip("x"))
+                masking_fun = aux.create_masking_fun(condition)
+                df = df[masking_fun(df[col].values)]
+                df_test = df_test[masking_fun(df_test[col].values)]
+
 
     #enconde categorical features using one hot encoding
     if hasattr(cf,"one_hot_features"):
@@ -111,7 +116,7 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
         if verbose:
             print "\n\n{}. Encoding categorical features".format(step_tracker)
         df = dp.encode_one_hot(df,cf.one_hot_features)
-        df_test = dp.encode_one_hot(df_test,one_hot_features)
+        df_test = dp.encode_one_hot(df_test,cf.one_hot_features)
 
     # get the final df shape
     m,n = df.shape # m - number of samples,n - number of features
@@ -210,8 +215,13 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
         if p_fun is not None:
             if verbose:
                 print "\n\tPreprocessing '{}' features".format(f_type)
-            p_fun = p_fun(cf.ML_estimator)
-            df.iloc[:,idx] = p_fun.fit_transform(df.iloc[:,idx].values,skip = False)
+
+            if f_type in cf.prepros_params:
+                p_fun = p_fun(ml_method = cf.ML_estimator,**cf.prepros_params[f_type])
+            else:
+                p_fun = p_fun(ml_method = cf.ML_estimator)
+
+            df.iloc[:,idx] = p_fun.fit_transform(df.iloc[:,idx].values)
             df_test.iloc[:,idx] = p_fun.transform(df_test.iloc[:,idx].values)
             nan_samples = np.sum(np.isnan(df.iloc[:,idx].values),axis = 1).sum()
             test_nan_samples = np.sum(np.isnan(df_test.iloc[:,idx].values),axis = 1).sum()
@@ -291,6 +301,40 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
     test_samples = df_test.as_matrix()
     ML_inputs["test_samples"] = test_samples
 
+    del train_samples,test_samples
+    
+
+    #Masking the datasets
+    train_samples_mask = np.array(train_samples_mask)
+    test_samples_mask = np.array(test_samples_mask)
+    features_mask = np.array(features_mask)
+    
+    step_tracker += 1
+    if verbose:
+        print "\n\n{}. Masking the ML_inputs matrices".format(step_tracker)
+
+    ML_inputs["feature_names"] = ML_inputs["feature_names"][features_mask]
+    #for i,feature_name in enumerate(ML_inputs["feature_names"]):
+     #   ML_inputs
+    for f_type in ML_inputs["feature_types"].keys():
+        indices = ML_inputs["feature_types"][f_type]
+        updated_indices = np.zeros_like(features_mask,dtype = bool)
+        updated_indices[indices] = True
+        updated_indices = updated_indices[features_mask]
+        ML_inputs["feature_types"][f_type] = np.where(updated_indices)
+        
+        
+    
+    ML_inputs["train_samples"] = ML_inputs["train_samples"]\
+                                 [train_samples_mask,:][:,features_mask].astype(np.float)
+    
+    ML_inputs["test_samples"] = ML_inputs["test_samples"]\
+                                 [test_samples_mask,:][:,features_mask].astype(np.float)
+
+    ML_inputs["train_targets"] = ML_inputs["train_targets"][train_samples_mask].astype(np.float)
+    ML_inputs["test_targets"] = ML_inputs["test_targets"][test_samples_mask].astype(np.float)
+
+    
     ML_inputs["mask"] = namedtuple("ML_inputs_mask","train_samples_mask,test_samples_mask,features_mask")(**{
         
         "train_samples_mask":np.array(train_samples_mask),

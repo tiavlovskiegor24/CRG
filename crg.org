@@ -211,17 +211,24 @@ the linear dependence of targets on features
 CLOSED: [2017-04-03 Mon 17:22] SCHEDULED: <2017-03-28 Tue>
 random forest already have multiclass capability
 ** TODO Integration site prediction 
-DEADLINE: <2017-04-07 Fri>
-*** TODO Form full dataset from gmfpt, row_sum and contact decay
-SCHEDULED: <2017-04-04 Tue>
-*** TODO Create control file for this problem
-SCHEDULED: <2017-04-04 Tue>
-*** TODO form ML_inputs from full dataser 
-SCHEDULED: <2017-04-05 Wed>
-*** TODO run ML_process on ML_inputs
-SCHEDULED: <2017-04-05 Wed>
-
-
+DEADLINE: <2017-04-28 Fri>
+*** DONE Form full dataset from gmfpt, row_sum and contact decay
+CLOSED: [2017-04-26 Wed 18:37] SCHEDULED: <2017-04-04 Tue>
+*** DONE Create control file for this problem
+CLOSED: [2017-04-26 Wed 18:37] SCHEDULED: <2017-04-04 Tue>
+*** DONE form ML_inputs from full genome dataset 
+CLOSED: [2017-04-26 Wed 18:37] SCHEDULED: <2017-04-05 Wed>
+*** DONE run ML_process on ML_inputs
+CLOSED: [2017-04-26 Wed 18:37] SCHEDULED: <2017-04-05 Wed>
+*** DONE add ab_score feature from eduard
+CLOSED: [2017-04-26 Wed 18:38]
+*** TODO Debias ab_score values according to Eduards suggestion
+we need to bypass the sparsity of our dataset
+SCHEDULED: <2017-04-27 Thu>
+**** TODO reproduce eduards histgrams of ab_score
+SCHEDULED: <2017-04-27 Thu>
+*** TODO train models only on bins with positive bins             :results:
+SCHEDULED: <2017-04-27 Thu>
 * Task log 
 
 ** DONE Check CRG email

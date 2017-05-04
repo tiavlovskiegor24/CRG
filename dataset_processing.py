@@ -13,9 +13,10 @@ def create_full_hiv_expr_dataset(filename,train_test = True):
     print "\nImporting features from files"
     resolution = "50kb"# select from "10kb","50kb","100kb" and "500kb"
     directory = "/mnt/shared/data/HiC_processing/"
-    feature_filenames = {"contact_decay":"contacts_decay_Jurkat_",\
-                         "gmfpt":"gmfpt_feature_Jurkat_",\
-                         "row_sum":"row_sum_Jurkat_"}
+    feature_filenames = {"contact_decay":"contacts_decay_Jurkat_",
+                         "gmfpt":"gmfpt_feature_Jurkat_",
+                         "row_sum":"row_sum_Jurkat_",
+    }
     
     df = import_features(df,resolution,directory,feature_filenames)    
 
@@ -72,7 +73,8 @@ def create_full_hiv_integ_dataset(newfilename,res = "50kb",train_test = True):
     feature_filenames = {"contact_decay":"contacts_decay_Jurkat_",
                          "gmfpt":"gmfpt_feature_Jurkat_",
                          "row_sum":"row_sum_Jurkat_",
-                         #"integ_density":"hiv_integ_density_Jurkat_",
+                         "ab_score":"ab_score_",
+                         "integ_density":"hiv_integ_density_Jurkat_",
     }
     
     

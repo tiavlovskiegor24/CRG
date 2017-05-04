@@ -13,7 +13,7 @@ def get_sample_weights(dataset,samples_mask):
     return array
 
 def create_masking_fun(condition):
-    
+    # function that creates mapping function based on 'condition'
     if not callable(condition):
         store = locals() 
         to_execute = "condition = lambda x : {}".format(condition)

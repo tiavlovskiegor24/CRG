@@ -65,6 +65,19 @@ sample_weights = False
 source = "data/Jurkat_hiv_{}_50kb.txt"
 
 
+### Preprocessing parameters ###
+prepros_params = {
+
+    "gmfpt":{
+        "skip":False,
+        "tail_compaction":(2.,98.)
+    },
+
+    "distance":{
+        "skip":False,
+    },
+}
+
 ### Indicate target type and pointer to its selection and preprocessing object with any params ###
 '''
 target_type = {

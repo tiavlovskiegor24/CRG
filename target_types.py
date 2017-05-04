@@ -1,7 +1,6 @@
 #### Targets selection and preprocessing types
 import numpy as np
 import auxiliary_items as aux
-reload(aux)
 
 class in_dataset(object):
     '''
@@ -31,7 +30,7 @@ class in_dataset(object):
         
 
         print "\n\tRescaling the targets to 0-1 range"
-        array = (array-self.min_value)/(self.max_value-self.min_value)
+        #array = (array-self.min_value)/(self.max_value-self.min_value)
         
         return array
 
@@ -44,7 +43,7 @@ class in_dataset(object):
             array = aux.linear_tail_compaction(array,self,fit = False)
 
         
-        array = (array-self.min_value)/(self.max_value-self.min_value)
+        #array = (array-self.min_value)/(self.max_value-self.min_value)
         return array
 
 

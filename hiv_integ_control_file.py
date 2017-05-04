@@ -21,8 +21,8 @@ features_to_exclude_list = {
     "bin",
     "chrom",
     "integ_density",
-    "control_targets",
-    "gmfpt",
+    #"control_targets",
+    #"gmfpt",
 }
 
 
@@ -32,8 +32,24 @@ sample_groups = ["chrom"]
 
 #### Select a particlular group of samples from the full dataset ####
 select_sample_group = {
-    "chrom":"chr19",
+    "chrom":"x == 'chr19'",
+    "integ_density":"x > 0",
 }
+
+### Preprocessing parameters ###
+prepros_params = {
+
+    "gmfpt":{
+        "skip":False,
+        "tail_compaction":(2.,98.)
+    },
+
+    "distance":{
+        "skip":False,
+    },
+}
+
+
 
 ### Include whether to consider sample weights in optimisation ####
 sample_weights = False
@@ -47,7 +63,7 @@ source = "data/hiv_integration_{}_50kb.txt"
 target_type = {
     "name":"in_dataset",
     "params":{
-        "column_name":"gmfpt",
+        "column_name":"integ_density",
         "tail_compaction":None,
     },
 }
