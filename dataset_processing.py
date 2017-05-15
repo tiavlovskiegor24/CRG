@@ -87,7 +87,67 @@ def create_full_hiv_integ_dataset(newfilename,res = "50kb",train_test = True):
 
     # adding control_targets column
     df["control_targets"] = np.sum(df[["gmfpt","row_sum","contact_decay"]].values,axis = 1)
+
+    
+    # getting all feature of jurkat
+    df_jurkat = pd.read_table("data/Jurkat_hiv_50kb.txt",comment = "#")
+    df_jurkat["bin"] = (df_jurkat["pos"].values / 50000).astype(int) # discretise the position to bin resolution
+    columns_to_drop = ['brcd','pos', 'gene_name',"rep",\
+                           "expr","nread","mapq","strand","cat","chrom","DNA","RNA"]
+    
+    
+    present_features = set(df.columns.tolist()+columns_to_drop)
+    chroms = {}
+    for chrom in np.unique(df_jurkat["chrom"]):
+        indices = np.where(df_jurkat["chrom"].values == chrom)[0]
+        bins = {}
+        for b in np.unique(df_jurkat["bin"].values[indices]):
+            bins[b] = np.where(df_jurkat["bin"].values[indices] == b)[0]
+        chroms[chrom] = (indices,bins)
+
+    target_indices = {}
+    for i,(chrom,b) in enumerate(df[["chrom","bin"]].values):
+        target_indices[(chrom,b)] = i
         
+    for column in df_jurkat.columns.tolist():
+        if column not in present_features and column[:2] != "d_":
+            print column
+            
+            feature_vector = np.ones(df.shape[0])*np.nan
+            
+            for chrom,(indices,bins) in chroms.iteritems():
+                for b,b_indices in bins.iteritems():
+                    bin_average = np.mean(df_jurkat[column].values[indices][b_indices])
+                    if (chrom,b) not in target_indices:
+                        t_idx = np.where((df["chrom"].values == chrom) & (df["bin"] == b))[0]
+                        target_indices[(chrom,b)] = t_idx 
+                    else:
+                        t_idx = target_indices[(chrom,b)]
+                    feature_vector[t_idx] = bin_average
+                    
+            '''
+            for chrom,b,value in df_jurkat[["chrom","bin",column]].values:
+                #print chrom,b,value
+                idx = np.where((df["chrom"] == chrom) & (df["bin"] == b))[0][0]
+                #print feature_values[idx],np.isnan(feature_values[idx]),chrom,b,value,idx
+                #if np.isnan(feature_values[idx]):
+                    #feature_values[idx] = value
+                
+                #elif feature_values[idx] != value:
+                    #print column,b,feature_values[b],value
+                 #   raise Exception("{},{},{},{},{}".format(column,chrom,b,feature_values[idx],value))
+                if idx not in feature_values:
+                    feature_values[idx] = [value]
+                else:
+                    feature_values[idx].append(value)
+            for idx,values in feature_values.iteritems():
+                feature_vector[idx] = sum(values)/len(values)
+            '''
+                 
+            df[column] = feature_vector
+
+    del df_jurkat,feature_vector,target_indices
+    
     if train_test:
         #split in train and test uniformly from each chromosome
         print "\nSpliting into train and test and saving the datasets"
