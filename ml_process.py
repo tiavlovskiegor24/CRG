@@ -3,7 +3,6 @@ from sklearn import metrics
 from sklearn.model_selection import GridSearchCV
 
 
-
 from time import time
 import numpy as np
 import pandas as pd
@@ -50,7 +49,7 @@ def run_ML(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None
     X,y = ML_inputs.get_data("train")
 
     if estimator_name[-3:] != "_MC":
-        assert np.max(X) <= 1 and np.min(X) >= 0 and np.max(y) <= 1 and np.min(y) >= 0,\
+        assert X.max() <= 1 and X.min() >= 0 and np.max(y) <= 1 and np.min(y) >= 0,\
             "Data is not scaled to 0-1 range"
 
     
@@ -61,10 +60,11 @@ def run_ML(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None
         clf = estimator(**kwargs)
 
         #temporary giving weights to sampels
-        if cf.sample_weights:    
-            fit_params = {
-                "sample_weight" : ML_inputs["train_sample_weight"],
-            }
+        if hasattr(cf,"sample_weights"):
+            if cf.sample_weights:    
+                fit_params = {
+                    "sample_weight" : ML_inputs["train_sample_weight"],
+                }
         
         
         
@@ -83,8 +83,7 @@ def run_ML(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None
         
         X,y = ML_inputs.get_data("test")
         
-        print "\n\tTest score is {:.2f}".format(clf.best_estimator_.score(X,y,sample_weight = \
-                                                          ML_inputs["test_sample_weight"]))
+        print "\n\tTest score is {:.2f}".format(clf.best_estimator_.score(X,y,sample_weight = ML_inputs["test_sample_weight"]))
 
         if estimator_name[-2:] == "_C":
             print metrics.classification_report(y,clf.predict(X))

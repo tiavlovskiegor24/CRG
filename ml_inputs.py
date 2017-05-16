@@ -14,7 +14,10 @@ class ML_inputs_tuple(object):
         self.data = namedtuple("ML_inputs",ML_inputs_dict.keys())(**ML_inputs_dict)
     
     def __getitem__(self,key):
-        return getattr(self.data,key)
+        if hasattr(self.data,key):
+            return getattr(self.data,key)
+        else:
+            return None
 
     def get_data(self,train_or_test = "train",masked = True):
         
