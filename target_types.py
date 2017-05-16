@@ -6,15 +6,32 @@ class in_dataset(object):
     '''
     target are already in the dataset 
     '''
-    def __init__(self,column_name = "control_targets",tail_compaction = None):
+    def __init__(self,column_name = "control_targets",
+                 tail_compaction = None,
+                 scale=True,
+                 nan_values = None,
+                 log_values=False):
         self.column_name = column_name
+        self.scale = scale
+        self.log_values = log_values
         if tail_compaction is not None:
             self.lower_percentile,self.upper_percentile = tail_compaction
+
+        self.nan_values = nan_values
         
     def fit_transform(self,dataset):
         # takes the column from dataset
         print "\n\tTaking '{}' column as targets".format(self.column_name)
         array = dataset[self.column_name].values.ravel()
+
+        #Handling Nans
+        if self.nan_values is not None:
+            print "\n\tSetting Nan values to '{}'".format(self.nan_values)
+            array = np.where(np.isnan(array),self.nan_values,array)
+
+        if self.log_values:
+            print "\n\tTaking the log of targets"
+            array = np.log(array)
 
         self.max_value = np.nanmax(array,axis = 0,keepdims = True)
         self.min_value = np.nanmin(array,axis = 0,keepdims = True)
@@ -26,24 +43,31 @@ class in_dataset(object):
             print "\n\tShrinking top {}% and bottom {}% of samples"\
                 .format(self.upper_percentile,self.lower_percentile)
             array = aux.linear_tail_compaction(array,self,fit = True)
-
-        
-
-        print "\n\tRescaling the targets to 0-1 range"
-        #array = (array-self.min_value)/(self.max_value-self.min_value)
+            
+        if self.scale:
+            print "\n\tRescaling the targets to 0-1 range"
+            array = (array-self.min_value)/(self.max_value-self.min_value)
         
         return array
 
 
     def transform(self,dataset):
         array = dataset[self.column_name].values.ravel()
-        
+
+        #Handling Nans
+        if self.nan_values is not None:
+            array = np.where(np.isnan(array),self.nan_values,array)
+
+        if self.log_values:
+            array = np.log(array)
+
         if hasattr(self,"upper_percentile") and hasattr(self,"lower_percentile"):
             # shrinking values in top and bottom tails
             array = aux.linear_tail_compaction(array,self,fit = False)
 
-        
-        #array = (array-self.min_value)/(self.max_value-self.min_value)
+        if self.scale:
+            array = (array-self.min_value)/(self.max_value-self.min_value)
+
         return array
 
 

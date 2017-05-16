@@ -7,13 +7,12 @@ ML_estimator = "Lasso_R"
 
 ### Specify feature types to exclude from ML training ###
 feature_types_to_exclude_list = {
-    #"chip_c_hb" : None,
-    #"chip_c_hb_r" : None,
-    #"chip_c_zb" : None,
-    #"chip_c_zb_r" : None,
-    #"categorical": None,
-    #"distance":None,
-    
+    "chip_c_hb",
+    #"chip_c_hb_r",
+    "chip_c_zb",
+    #"chip_c_zb_r",
+    "categorical",
+    "distance",
 }
 
 ### Specify individual features to exclude from ML training ###
@@ -65,6 +64,9 @@ target_type = {
     "params":{
         "column_name":"integ_density",
         "tail_compaction":None,
+        "scale":False,
+        "nan_values":0,
+        "log_values":False,
     },
 }
 

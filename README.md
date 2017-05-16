@@ -1,3 +1,3 @@
 # CRG
 
-Storing my scripts here
+Machine Learning Pipeline for Biological Data Analysis

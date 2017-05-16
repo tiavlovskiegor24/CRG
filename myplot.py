@@ -15,8 +15,9 @@ def myplot(indices = None,values = None,style = "b",shape = (1,1),figsize = (14,
     try:
         ax.plot(indices,values,style,**kwargs)
         ax.set_xlim(xmax = max(indices),xmin = min(indices))
-    except:
-        ax[0].plot(indices,values,style,**kwargs)
+    except Exception as e:
+        #print e
+        ax[0].plot(indices,values,style)
         ax[0].set_xlim(xmax = max(indices),xmin = min(indices))
         
     f.tight_layout()
