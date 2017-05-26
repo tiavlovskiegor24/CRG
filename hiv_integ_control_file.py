@@ -54,7 +54,7 @@ prepros_params = {
 sample_weights = False
 
 ### Specify Dataset location ###
-source = "data/hiv_integration_{}_50kb.txt"
+source = "data/hiv_integration_large_{}_50kb.txt"
 
 
 ### Indicate target type and pointer to its selection and preprocessing object with any params ###
@@ -64,9 +64,9 @@ target_type = {
     "params":{
         "column_name":"integ_density",
         "tail_compaction":None,
-        "scale":False,
+        "scale":True,
         "nan_values":0,
-        "log_values":False,
+        "log_values":True,
     },
 }
 

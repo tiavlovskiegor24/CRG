@@ -226,8 +226,8 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
 
             df.iloc[:,idx] = p_fun.fit_transform(df.iloc[:,idx].values)
             df_test.iloc[:,idx] = p_fun.transform(df_test.iloc[:,idx].values)
-            nan_samples = np.sum(np.isnan(df.iloc[:,idx].values),axis = 1).sum()
-            test_nan_samples = np.sum(np.isnan(df_test.iloc[:,idx].values),axis = 1).sum()
+            nan_samples = (np.sum(np.isnan(df.iloc[:,idx].values),axis = 1) > 0).sum()
+            test_nan_samples = (np.sum(np.isnan(df_test.iloc[:,idx].values),axis = 1) > 0).sum()
             if verbose:
                 print "\t{} train and {} test  samples remaining with Nan values for '{}' features."\
                 .format(nan_samples,test_nan_samples,f_type)

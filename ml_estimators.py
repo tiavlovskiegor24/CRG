@@ -1,4 +1,5 @@
 from importlib import import_module
+import numpy as np
 
 def get_estimator(estimator_name):
 
@@ -114,15 +115,33 @@ ML_estimators = {
         },
     },
 
+    "Ridge_R":{
+        "estimator":"Ridge",
+        "module":"sklearn.linear_model",
+        "param_grid":{
+           "alpha":(1e-4,3e-4,1e-3,3e-3,1e-2)
+        },
+    },
+
 
     "Lasso_R":{
         "estimator":"Lasso",
         "module":"sklearn.linear_model",
         "param_grid":{
-           "alpha":(3e-5,1e-4,3e-4,1e-3,)
+           "alpha":(1e-4,3e-4,1e-3,3e-3,1e-2)
         },
     },
 
+    "ENet_R":{
+        "estimator":"ElasticNet",
+        "module":"sklearn.linear_model",
+        "param_grid":{
+            "alpha":(1e-3,3e-3,1e-2,3e-2,1e-1,3e-1,1,3),
+            "l1_ratio":np.linspace(0.0,1.0,num = 10)
+        },
+    },
+
+    
     "Log_C":{
         "estimator":"LogisticRegression",
         "module":"sklearn.linear_model",

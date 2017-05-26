@@ -62,7 +62,10 @@ def full_array(array,res = None,fill_value = np.nan):
                 continue
 
             bins = array[chrom]["bin_start"]/res
-            n = chrom_sizes[chrom]/res+1
+            if chrom in chrom_sizes:
+                n = chrom_sizes[chrom]/res+1
+            else:
+                continue
 
             f_array = np.array(zip([chrom for i in xrange(n)],\
                                    np.arange(n)*res,\

@@ -8,7 +8,7 @@ from hi_c_cooler import hi_c_cooler
 from sparsify import sparsify
 from time import time
 from myplot import myplot
-from file_processing import write_feature_file
+from feature_file_processing import write_feature_file
 
 
 def row_sum_feature(newfilename,filepath,res = None, chrom = None):
@@ -35,7 +35,7 @@ def row_sum_feature(newfilename,filepath,res = None, chrom = None):
             
             row_sum = np.sum(cis,axis = 1).astype(np.int)
             
-            myplot(row_sum,bins)
+            myplot(bins,row_sum)
             plt.title(chrom)
             plt.show()
             '''

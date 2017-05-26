@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from myplot import myplot
 import cooler
 from scipy import sparse
-from file_processing import write_feature_file
+from feature_file_processing import write_feature_file
 from hi_c_cooler import hi_c_cooler
 
 def Contact_Decay_Feature(newfilename,filepath,res = None,chrom = None):

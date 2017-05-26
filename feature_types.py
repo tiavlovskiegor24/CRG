@@ -825,6 +825,78 @@ chip_c_hb_r = {
 }
 
 
+#Chip_z25 features
+class chip_z25_preprocessing(feature_type_class):
+
+    def __init__(self,**kwargs):
+
+        super(chip_z25_preprocessing,self).__init__(**kwargs)
+
+    
+    def fit_transform(self,array,skip = False):
+        #method for extracting scaling parameters from train set and tranforming
+        # the train set itself
+
+        self.skip = skip
+        
+        if self.skip: 
+            print "\tSkipping the preprocessing of 'chip_z25' features"
+            return array
+
+        #Nan handling
+        #Nans typically lie in non-reachable region and thus it is better to remove this samples
+        #Leave Nans and get_ML_inputs will take care of them
+
+        if self.ml_method not in []:
+
+            # rescaling values to 0-1 range
+            print "\tRescaling values to 0-1 range"
+            array = (array)/(25)
+        
+            '''
+            print "\tRescaling 'chip_c_hb_r' to 0-1 range"
+            self.max_vals = np.nanmax(array,axis = 0,keepdims = True)
+            self.min_vals = np.nanmin(array,axis = 0,keepdims = True)
+            array = (array-self.min_vals)/(self.max_vals-self.min_vals)
+            '''
+            
+        return array
+
+    def transform(self,array):
+
+        if self.skip:
+            print "\tSkipping the preprocessing of 'chip_z25' features"
+            return array
+
+
+        #Nan handling
+        #Nans typically lie in non-reachable region and thus it is better to remove this samples
+        #Leave Nans and get_ML_inputs will take care of them
+
+        if self.ml_method not in []:
+
+            # rescaling values to 0-1 range
+            array = (array)/(25)
+
+        return array
+
+
+
+
+chip_z25 = {
+
+        "id_fun" : (lambda x: True if (x[-4:] == "_z25")  else False),
+
+        "preprocess" : chip_z25_preprocessing, 
+        
+        "file_format" : "this features are stored in txt file", 
+       
+        "about" : "chip_z25 were created by Guillaume", 
+        
+}
+
+
+
 
     
 
@@ -854,6 +926,9 @@ feature_types = {
         
     }, # don't forget a comma at the end of the entry
 
+
+    # Chip feature created Guillaume
+    "chip_z25" : chip_z25,
 
     # Chip-C features created by Eduard
     "chip_c_zb" : {

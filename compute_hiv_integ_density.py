@@ -18,14 +18,14 @@ def compute_hiv_integ_density(newfilename,source,res = None, chrom = None):
         print "Indicate resolution"
         return
 
-    df = pd.read_table(source,comment = "#") # load the bhive dataset
-    df = df[["pos","chrom"]] # leave only integration site position and chromosome columns
-    df["bin"] = (df["pos"].values / res).astype(int) # discretise the position to bin resolution
+    df = pd.read_table(source,comment = "#",low_memory = False) # load the bhive dataset
+    df = df[["insert_position","chr"]] # leave only integration site position and chromosome columns
+    df["bin"] = (df["insert_position"].values / res).astype(int) # discretise the position to bin resolution
 
     # construct dictionary of chromosome indices
     chrom_sort = {} 
-    for chrom in df["chrom"].unique():
-        chrom_sort[chrom] = np.where(df["chrom"] == chrom)[0]
+    for chrom in df["chr"].unique():
+        chrom_sort[chrom] = np.where(df["chr"] == chrom)[0]
 
     with open(newfilename,"wb") as f: 
         print "Processing {}".format(chrom)
@@ -33,13 +33,17 @@ def compute_hiv_integ_density(newfilename,source,res = None, chrom = None):
         for chrom in chrom_sort:
             integ_counts = df.iloc[chrom_sort[chrom],:].groupby("bin").agg("count")
             bins = integ_counts.index.values
-            integ_counts= integ_counts["pos"].values
+            integ_counts= integ_counts["insert_position"].values
 
 
             fig,ax = myplot()
             ax.vlines(bins,0,integ_counts)
             plt.title(chrom)
             plt.show()
+
+            if chrom[-1] == "_" or chrom in {"chrM","chrUn"}:
+                #chrom = chrom[:-1]
+                continue
 
             write_feature_file(f,data = (chrom,bins,integ_counts),res = res,feature_fmt = "%d")
             print "{} finished\n".format(chrom)
