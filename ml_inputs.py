@@ -337,7 +337,10 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
     ML_inputs["train_targets"] = ML_inputs["train_targets"][train_samples_mask].astype(np.float)
     ML_inputs["test_targets"] = ML_inputs["test_targets"][test_samples_mask].astype(np.float)
 
-    
+    if verbose:
+        print "\n\t Final train dataset shape: {}".format(ML_inputs["train_samples"].shape)
+        print "\t Final test dataset shape: {}".format(ML_inputs["test_samples"].shape)
+    '''
     ML_inputs["mask"] = namedtuple("ML_inputs_mask","train_samples_mask,test_samples_mask,features_mask")(**{
         
         "train_samples_mask":np.array(train_samples_mask),
@@ -345,7 +348,7 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
         "features_mask" : np.array(features_mask),
         
         })
-
+    '''
     if cf.sample_weights:
         step_tracker += 1
         if verbose:

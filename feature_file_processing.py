@@ -3,9 +3,9 @@ import pandas as pd
     
 def get_feature_file_format():
     return {'names': ('chrom', 'bin_start', 'bin_end','value'),\
-            'formats': ('a10', 'i', 'i','f')}
+            'formats': ('a16', 'i', 'i','f')}
     
-def read_feature_file(filename,as_dict = True,impute = None, **kwargs):
+def read_feature_file1(filename,as_dict = True,impute = None, **kwargs):
     array = np.loadtxt(filename, dtype = get_feature_file_format(),delimiter="\t",**kwargs)
     if as_dict:
         array_dict = {}
@@ -19,12 +19,35 @@ def read_feature_file(filename,as_dict = True,impute = None, **kwargs):
         
     return array
 
-def write_feature_file(filename,data,res,feature_fmt = "%.3f",**kwargs):
+def read_feature_file(filename,as_dict = True,impute = None, **kwargs):
+    data = []
+    with open(filename,"r") as f:
+        for line in f:
+            line = line.split("\t")
+            chrom,bin_start,bin_end,value = line[0],int(line[1]),int(line[2]),float(line[3])
+            data.append((chrom,bin_start,bin_end,value))
+
+            
+    array = np.array(data,dtype=get_feature_file_format())
+    del data
+    if as_dict:
+        array_dict = {}
+        for chrom in np.unique(array["chrom"]):
+            array_dict[chrom] = array[np.where(array["chrom"]==chrom)]
+
+        array = array_dict
+
+    if impute is not None:
+        array = full_array(array,impute)
+        
+    return array
+
+def write_feature_file1(filename,data,res,feature_fmt = "%.3f",**kwargs):
     # data is a tuple of chromosome, bins and values vectors 
     
     chroms,bins,values = data
 
-    n = values.shape[0]
+    n = len(values)
 
     
     if bins is None:
@@ -34,8 +57,8 @@ def write_feature_file(filename,data,res,feature_fmt = "%.3f",**kwargs):
         chroms = [chroms for i in xrange(n)]
         
     array = np.array(zip(chroms,\
-                         bins*res,\
-                         (bins+1)*res,\
+                         [b*res for b in bins],\
+                         [(b+1)*res for b in bins],\
                          values),\
                      dtype=get_feature_file_format())
 
@@ -45,6 +68,11 @@ def write_feature_file(filename,data,res,feature_fmt = "%.3f",**kwargs):
     chrom_fmt = "%"+str(len(max(array["chrom"],key=len)))+"s"
     fmt = chrom_fmt+"\t%d\t%d\t"+feature_fmt
     np.savetxt(filename,array,fmt = fmt,**kwargs)
+
+def write_feature_file(f,data,res,**kwargs):
+    #with open(filename,"a") as f:
+    for chrom,b,value in data:
+        f.write("{}\t{}\t{}\t{}\n".format(chrom,b*res,(b+1)*res,value))
     
 
 def full_array(array,res = None,fill_value = np.nan):

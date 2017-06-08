@@ -54,31 +54,35 @@ def create_full_hiv_integ_dataset(newfilename,res = "5kb",train_test = True):
 
     resolution = {'100kb': 100000, '10kb': 10000, '500kb': 500000, '50kb': 50000,"":None,'5kb':5000}
     directory = "/mnt/shared/data/HiC_processing/"
-
-    data = read_feature_file(directory+"hiv_integ_density_large_"+res,as_dict = True)
+    '''
+    data = read_feature_file(directory+"hiv_integ_density_bushman_"+res,as_dict = True)
     data = full_array(data,res = resolution[res],fill_value = 0)
     data = ravel_feature_data(data)
-    
-    
+    '''
+    df = pd.read_table("data/ChIP_features.txt")
+    df["bin"] = (df["start"].values / resolution[res]).astype(int) # discretise the position to bin resolution
+
+    '''
     df = pd.DataFrame()
     df["bin"] = (data["bin_start"]/resolution[res]).astype(int)
     df["integ_density"] = data["value"]
     df["chrom"] = data["chrom"]
     del data
-    
+    '''
+
     #import additional features from files
     print "\nImporting features from files"
     #resolution = "5kb"# select from "10kb","50kb","100kb" and "500kb"
     feature_filenames = {"contact_decay":"contacts_decay_Jurkat_",
                          #"gmfpt":"gmfpt_feature_Jurkat_",
                          "row_sum":"row_sum_Jurkat_",
-                         #"ab_score":"ab_score_",
-                         "integ_density":"hiv_integ_density_large_",
+                         "ab_score":"ab_score_Jurkat_",
+                         "integ_density":"hiv_integ_density_bushman_",
     }
     
     
     df = import_features(df,"bin",res,directory,feature_filenames)    
-    print df.shape
+    
     # get chromosome indices
     chrom_sort = {}
     for chrom in df["chrom"].unique():
@@ -177,7 +181,6 @@ def create_full_hiv_integ_dataset(newfilename,res = "5kb",train_test = True):
             
     del df_jurkat,feature_vector,target_indices
     
-    '''
 
     # getting chip_z25 features
     df_jurkat = pd.read_table("data/ChIP_features.txt")
@@ -222,7 +225,7 @@ def create_full_hiv_integ_dataset(newfilename,res = "5kb",train_test = True):
             print
 
     del df_jurkat,feature_vector,target_indices
-
+    '''
     
     if train_test:
         #split in train and test uniformly from each chromosome
@@ -236,9 +239,9 @@ def create_full_hiv_integ_dataset(newfilename,res = "5kb",train_test = True):
             #if name is "test":
              #   to_write = drop_features(to_write,["targets"])
 
-            to_write.to_csv("data/{}_{}_50kb.txt".format(newfilename,name),sep="\t",index=False)
+            to_write.to_csv("data/{}_{}_{}.txt".format(newfilename,name,res),sep="\t",index=False)
     else:
-        to_write.to_csv("data/{}_{}_50kb.txt".format(newfilename,"full"),sep="\t",index=False)        
+        to_write.to_csv("data/{}_{}_{}.txt".format(newfilename,"full",res),sep="\t",index=False)        
 
         
 def train_test_split(df,train_f = 0.9,chrom_sort = None):
@@ -285,7 +288,7 @@ def import_features(df,map_col = "pos",res = "",directory = None,feature_filenam
         data = read_feature_file(directory+feature_filenames[feature]+res)
         data = full_array(data,res = resolution[res])
  
-        df[feature] = df[map_col]*0
+        df[feature] = df[map_col].values*np.nan
         if isinstance(data,dict):
             for chrom in df["chrom"].unique():
                 idx = np.where(df["chrom"] == chrom)[0]

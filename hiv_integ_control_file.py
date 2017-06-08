@@ -65,7 +65,7 @@ target_type = {
         "column_name":"integ_density",
         "tail_compaction":None,
         "scale":True,
-        "nan_values":0,
+        "nan_values":None,
         "log_values":True,
     },
 }

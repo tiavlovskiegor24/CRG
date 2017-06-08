@@ -3,13 +3,13 @@ import cooler
 import numpy as np
 from scipy import sparse
 
-def hi_c_cooler(filepath,chrom,res = None,bins=True):
+def hi_c_cooler(c,chrom,res = None,bins=True):
 
     if res is None:
         print "Input the resolution"
         return
     # load the data
-    c = cooler.Cooler(filepath)
+    #c = cooler.Cooler(filepath)
 
     # select indivudual chromosomes
     cis = sparse.csr_matrix(c.matrix(balance = False).fetch(chrom)).astype(np.float)

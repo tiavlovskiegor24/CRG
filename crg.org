@@ -285,3 +285,5 @@ CLOSED: [2017-04-03 Mon 14:37] DEADLINE: <2017-03-30 Thu 13:00> SCHEDULED: <2017
 *** DONE check row sum feature writting to file
 *** DONE check decay constant writting to file
 *** DONE compute gmfpt 
+* Tasks
+

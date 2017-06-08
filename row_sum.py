@@ -30,7 +30,7 @@ def row_sum_feature(newfilename,filepath,res = None, chrom = None):
         for chrom in chroms:
             print "Processing %s"%chrom
 
-            cis,bins = hi_c_cooler(filepath,chrom,res = res)
+            cis,bins = hi_c_cooler(c,chrom,res = res)
             n = cis.shape[0]
             
             row_sum = np.sum(cis,axis = 1).astype(np.int)
