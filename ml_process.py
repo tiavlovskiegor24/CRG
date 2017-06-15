@@ -7,7 +7,7 @@ from time import time
 import numpy as np
 import pandas as pd
 
-from myplot import myplot
+import myplot
 import ml_estimators
 
 
@@ -33,7 +33,7 @@ def grid_search(clf,X,y,param_grid,**kwargs):
     return clf
 
 
-def run_ML(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None,fit_params = None,**kwargs):
+def fit(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None,fit_params = None,**kwargs):
 
     if estimator_name is None:
         from control_file import ML_estimator as estimator_name
@@ -71,12 +71,12 @@ def run_ML(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None
         clf = grid_search(clf,X,y,param_grid,fit_params = fit_params)
 
         print "\n\tTrain score is {:.2f}".format(clf.best_estimator_.score(X,y,sample_weight = \
-                                                          ML_inputs["train_sample_weight"]))
+                                                                           ML_inputs["train_sample_weight"]))
 
         if estimator_name[-2:] == "_C" or estimator_name[-3:] == "_MC":
             print metrics.classification_report(y,clf.predict(X))
         elif estimator_name[-2:] == "_R":            
-            f,ax = myplot(y,clf.predict(X),style = ".",shape = (1,2),figsize = (14,7),sharey = True)
+            f,ax = myplot.myplot(y,clf.predict(X),style = ".",shape = (1,2),figsize = (14,7),sharey = True)
             ax[0].set_title("Train samples")
             ax[0].set_ylabel("Predicted")
             ax[0].hlines(y.mean(),0,1)
@@ -123,3 +123,25 @@ def run_ML(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None
             
         return group_clfs
     
+def evaluate(clf,ML_inputs,select = "all",estimator_name = None):
+
+    X,y = ML_inputs.get_data(select)
+
+    print "\n\t'{}' score is {:.2f}".format(estimator_name,clf.best_estimator_\
+                                            .score(X,y,sample_weight = None))
+
+    if estimator_name[-2:] == "_C":
+        print metrics.classification_report(y,clf.predict(X))
+    elif estimator_name[-2:] == "_R":
+        f,axis = myplot.myplot(y,clf.predict(X),style = ".",figsize = (14,7))
+        axis.plot(y,clf.predict(X),".")
+        axis.set_title("All samples")
+        axis.hlines(y.mean(),0,1)
+
+        
+        axis.set_xlabel("Observed")
+        axis.set(aspect='equal')
+        axis.set_xlim(xmin = -.01,xmax = 1.01)
+        axis.set_ylim(ymin = -.01,ymax = 1.01)
+        axis.grid(True)
+        f.tight_layout()

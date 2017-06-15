@@ -23,8 +23,11 @@ def read_feature_file(filename,as_dict = True,impute = None, **kwargs):
     data = []
     with open(filename,"r") as f:
         for line in f:
-            line = line.split("\t")
-            chrom,bin_start,bin_end,value = line[0],int(line[1]),int(line[2]),float(line[3])
+            line = line.strip("\n").split("\t")
+            try:
+                chrom,bin_start,bin_end,value = line[0],int(line[1]),int(line[2]),float(line[3])
+            except:
+                print line
             data.append((chrom,bin_start,bin_end,value))
 
             

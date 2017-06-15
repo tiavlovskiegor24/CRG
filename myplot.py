@@ -4,6 +4,7 @@ import numpy as np
 def myplot(indices = None,values = None,style = "b",shape = (1,1),figsize = (14,4),**kwargs):
 
     f,ax = plt.subplots(shape[0],shape[1],figsize = (figsize[0],figsize[1]*shape[0]),**kwargs)
+    
 
     if indices is None:
         return f,ax

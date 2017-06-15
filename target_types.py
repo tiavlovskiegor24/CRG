@@ -28,7 +28,12 @@ class in_dataset(object):
         if self.nan_values is not None:
             print "\n\tSetting Nan values to '{}'".format(self.nan_values)
             array = np.where(np.isnan(array),self.nan_values,array)
-
+        '''remove later
+        print array.sum()
+        array = (array.astype(int) / 32).astype(float)
+        array[array == 0] = np.nan
+        '''
+        print np.nansum(array)
         if self.log_values:
             print "\n\tTaking the log of targets"
             array = np.log(array)
@@ -57,7 +62,12 @@ class in_dataset(object):
         #Handling Nans
         if self.nan_values is not None:
             array = np.where(np.isnan(array),self.nan_values,array)
-
+        '''remove later
+        print array
+        array = (array.astype(int) / 32).astype(float)
+        array[array == 0] = np.nan
+        print array
+        '''
         if self.log_values:
             array = np.log(array)
 

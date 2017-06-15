@@ -851,7 +851,7 @@ class chip_z25_preprocessing(feature_type_class):
 
             # rescaling values to 0-1 range
             print "\tRescaling values to 0-1 range"
-            array = (array)/(25)
+            array = (array)/(250)
         
             '''
             print "\tRescaling 'chip_c_hb_r' to 0-1 range"
@@ -876,7 +876,7 @@ class chip_z25_preprocessing(feature_type_class):
         if self.ml_method not in []:
 
             # rescaling values to 0-1 range
-            array = (array)/(25)
+            array = (array)/(250)
 
         return array
 

@@ -19,25 +19,20 @@ class ML_inputs_tuple(object):
         else:
             return None
 
-    def get_data(self,train_or_test = "train",masked = True):
+    def get_data(self,train_or_test = "train"):
         
-        if masked:
-            #confirm = raw_input("Are you sure you want to get non-masked data?(Y/n)\n Some samples may contain Nans and some columns may not be suitable for Machine Learning")
-            #if confirm == "Y":
+        if train_or_test == "all":
+            train_samples = getattr(self.data,"train_samples")
+            test_samples = getattr(self.data,"test_samples")
+            samples = np.vstack((train_samples,test_samples))
+
+            train_targets = getattr(self.data,"train_targets")
+            test_targets = getattr(self.data,"test_targets")
+            
+            targets = np.concatenate((train_targets,test_targets))
+        else:
             samples = getattr(self.data,"{}_samples".format(train_or_test))
             targets = getattr(self.data,"{}_targets".format(train_or_test))
-            return samples,targets
-            
-        #print "\tReturning masked '{}' data".format(train_or_test)
-        masks = getattr(self.data,"mask")
-        samples_mask = getattr(masks,"{}_samples_mask".format(train_or_test))
-        features_mask = getattr(masks,"features_mask")
-        
-        samples = getattr(self.data,"{}_samples".format(train_or_test))\
-                  [samples_mask,:][:,features_mask].astype(np.float)
-
-        targets = getattr(self.data,"{}_targets".format(train_or_test))\
-                  [samples_mask].astype(np.float)
 
         return samples,targets
         
@@ -97,7 +92,7 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
 
     # Track the steps of the routine
     step_tracker = 0
-
+    
     # select specific group of samples from the full dataset
     if hasattr(cf,"select_sample_group"):
         if cf.select_sample_group:
@@ -340,15 +335,7 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
     if verbose:
         print "\n\t Final train dataset shape: {}".format(ML_inputs["train_samples"].shape)
         print "\t Final test dataset shape: {}".format(ML_inputs["test_samples"].shape)
-    '''
-    ML_inputs["mask"] = namedtuple("ML_inputs_mask","train_samples_mask,test_samples_mask,features_mask")(**{
-        
-        "train_samples_mask":np.array(train_samples_mask),
-        "test_samples_mask": np.array(test_samples_mask),                              
-        "features_mask" : np.array(features_mask),
-        
-        })
-    '''
+
     if cf.sample_weights:
         step_tracker += 1
         if verbose:

@@ -50,7 +50,7 @@ def create_full_hiv_expr_dataset(filename,train_test = True):
         to_write.to_csv("data/Jurkat_hiv_{}_50kb.txt".format("full"),sep="\t",index=False)        
 
 
-def create_full_hiv_integ_dataset(newfilename,res = "5kb",train_test = True):
+def create_full_hiv_integ_dataset(newfilename,res = "50kb",train_test = True):
 
     resolution = {'100kb': 100000, '10kb': 10000, '500kb': 500000, '50kb': 50000,"":None,'5kb':5000}
     directory = "/mnt/shared/data/HiC_processing/"
@@ -59,8 +59,8 @@ def create_full_hiv_integ_dataset(newfilename,res = "5kb",train_test = True):
     data = full_array(data,res = resolution[res],fill_value = 0)
     data = ravel_feature_data(data)
     '''
-    df = pd.read_table("data/ChIP_features.txt")
-    df["bin"] = (df["start"].values / resolution[res]).astype(int) # discretise the position to bin resolution
+    df = pd.read_table("data/ChIP_features_{}.txt".format(res))
+    #df["bin"] = (df["start"].values / resolution[res]).astype(int) # discretise the position to bin resolution
 
     '''
     df = pd.DataFrame()
@@ -77,7 +77,7 @@ def create_full_hiv_integ_dataset(newfilename,res = "5kb",train_test = True):
                          #"gmfpt":"gmfpt_feature_Jurkat_",
                          "row_sum":"row_sum_Jurkat_",
                          "ab_score":"ab_score_Jurkat_",
-                         "integ_density":"hiv_integ_density_bushman_",
+                         "integ_density":"hiv_integ_density_large_",
     }
     
     
@@ -239,9 +239,10 @@ def create_full_hiv_integ_dataset(newfilename,res = "5kb",train_test = True):
             #if name is "test":
              #   to_write = drop_features(to_write,["targets"])
 
-            to_write.to_csv("data/{}_{}_{}.txt".format(newfilename,name,res),sep="\t",index=False)
+            to_write.to_csv("data/{}_{}_{}.txt".format(newfilename,name,res),sep="\t",index=False,na_rep="nan")
+            print "\tdata/{}_{}_{}.txt".format(newfilename,name,res)
     else:
-        to_write.to_csv("data/{}_{}_{}.txt".format(newfilename,"full",res),sep="\t",index=False)        
+        to_write.to_csv("data/{}_{}_{}.txt".format(newfilename,"full",res),sep="\t",index=False,na_rep="nan")        
 
         
 def train_test_split(df,train_f = 0.9,chrom_sort = None):
@@ -270,7 +271,7 @@ def train_test_split(df,train_f = 0.9,chrom_sort = None):
 
 
 
-def import_features(df,map_col = "pos",res = "",directory = None,feature_filenames = None):
+def import_features(df,map_col = "bin",res = "",directory = None,feature_filenames = None):
     resolution = {'100kb': 100000, '10kb': 10000, '500kb': 500000, '50kb': 50000,"":None,"5kb":5000}
 
     if map_col == "bin":
@@ -281,15 +282,42 @@ def import_features(df,map_col = "pos",res = "",directory = None,feature_filenam
         print "INvalid mapping column name"
         return
 
+    target_indices = {}
+    for i,(chrom,b) in enumerate(zip(df["chrom"].values,bins)):
+        target_indices[(chrom,b)] = i
+
     for feature in feature_filenames:
         #print "Computing feature: %s"%feature
-        print "\tImporting feature: {}".format(feature)
+        print "\tImporting feature: {}\n\t\t from {}".format(feature,directory+feature_filenames[feature]+res)
         #data = np.loadtxt(directory+feature_filenames[feature]+res,dtype=np.str,delimiter="\t")
         data = read_feature_file(directory+feature_filenames[feature]+res)
         data = full_array(data,res = resolution[res])
  
-        df[feature] = df[map_col].values*np.nan
+        feature_vector = np.ones(df.shape[0])*np.nan
+        encountered = set()
         if isinstance(data,dict):
+            for chrom,table in data.iteritems():
+                for sample in table:
+                    ch,start,end,value = sample
+                    assert ch == chrom
+                    b = int(start)/resolution[res]
+                    
+                    if (chrom,b) in encountered:
+                        print (chrom,b),"already encountered"
+                        
+                    if (chrom,b) in target_indices:
+                        t_idx = target_indices[(chrom,b)]
+                        feature_vector[t_idx] = value
+                        encountered.add((chrom,b))
+                    else:
+                        print chrom,b
+
+        df[feature] = feature_vector
+        #print np.isnan(df[feature].values).sum()
+        
+                
+        '''
+                
             for chrom in df["chrom"].unique():
                 idx = np.where(df["chrom"] == chrom)[0]
                 if chrom not in data:
@@ -305,6 +333,9 @@ def import_features(df,map_col = "pos",res = "",directory = None,feature_filenam
                 if chrom not in np.unique(data[:,0]):
                     print "Alarm ",feature
                 df.ix[idx,feature] = data[np.where(data[:,0] == chrom)[0],3][bins[idx]].astype(np.float)
+        print np.isnan(df[feature].values).sum()
+
+        '''
     return df
 
 
