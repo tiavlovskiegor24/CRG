@@ -33,7 +33,7 @@ class in_dataset(object):
         array = (array.astype(int) / 32).astype(float)
         array[array == 0] = np.nan
         '''
-        print np.nansum(array)
+        #print np.nansum(array)
         if self.log_values:
             print "\n\tTaking the log of targets"
             array = np.log(array)

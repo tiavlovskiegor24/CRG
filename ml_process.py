@@ -1,6 +1,6 @@
-
 from sklearn import metrics
 from sklearn.model_selection import GridSearchCV
+from sklearn.preprocessing import StandardScaler
 
 
 from time import time
@@ -52,6 +52,13 @@ def fit(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None,fi
         assert X.max() <= 1 and X.min() >= 0 and np.max(y) <= 1 and np.min(y) >= 0,\
             "Data is not scaled to 0-1 range"
 
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
+    #X = X-0.5
+    #print X
+    #print np.dot(X.T,X).diagonal()
+    #print X.mean(axis=0)
+    #print X.std(axis=0)
     
     if by_groups is None:
 
@@ -69,6 +76,7 @@ def fit(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None,fi
         
         
         clf = grid_search(clf,X,y,param_grid,fit_params = fit_params)
+        clf.scaler = scaler
 
         print "\n\tTrain score is {:.2f}".format(clf.best_estimator_.score(X,y,sample_weight = \
                                                                            ML_inputs["train_sample_weight"]))
@@ -82,6 +90,10 @@ def fit(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None,fi
             ax[0].hlines(y.mean(),0,1)
         
         X,y = ML_inputs.get_data("test")
+        X = clf.scaler.transform(X)
+        #X = X-0.5
+        #print np.dot(X.T,X).diagonal()
+        
         
         print "\n\tTest score is {:.2f}".format(clf.best_estimator_.score(X,y,sample_weight = ML_inputs["test_sample_weight"]))
 
@@ -122,10 +134,15 @@ def fit(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None,fi
             group_clfs[name] = estimator(X_group,y_group,**kwargs)
             
         return group_clfs
+
+def predict(clf,X,select = "all",):
+    X = clf.scaler.transform(X)
+    return clf.best_estimator_.predict(X)
     
 def evaluate(clf,ML_inputs,select = "all",estimator_name = None):
 
     X,y = ML_inputs.get_data(select)
+    
 
     print "\n\t'{}' score is {:.2f}".format(estimator_name,clf.best_estimator_\
                                             .score(X,y,sample_weight = None))

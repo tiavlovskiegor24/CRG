@@ -50,7 +50,7 @@ def create_full_hiv_expr_dataset(filename,train_test = True):
         to_write.to_csv("data/Jurkat_hiv_{}_50kb.txt".format("full"),sep="\t",index=False)        
 
 
-def create_full_hiv_integ_dataset(newfilename,res = "50kb",train_test = True):
+def create_full_hiv_integ_dataset(newfilename,seed_dataset = None,res = "50kb",train_test = True):
 
     resolution = {'100kb': 100000, '10kb': 10000, '500kb': 500000, '50kb': 50000,"":None,'5kb':5000}
     directory = "/mnt/shared/data/HiC_processing/"
@@ -59,7 +59,13 @@ def create_full_hiv_integ_dataset(newfilename,res = "50kb",train_test = True):
     data = full_array(data,res = resolution[res],fill_value = 0)
     data = ravel_feature_data(data)
     '''
-    df = pd.read_table("data/ChIP_features_{}.txt".format(res))
+
+    if seed_dataset is None:
+        print "Please, provide the seed dataset"
+        return
+    seed_dataset = seed_dataset.format(res)
+    print "Loading seed dataset: {}\n".format(seed_dataset)
+    df = pd.read_table(seed_dataset)
     #df["bin"] = (df["start"].values / resolution[res]).astype(int) # discretise the position to bin resolution
 
     '''

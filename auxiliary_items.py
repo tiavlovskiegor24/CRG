@@ -23,7 +23,7 @@ def create_masking_fun(condition):
     return condition
 
 
-def linear_tail_compaction(array,p_object,fit = True):
+def linear_tail_compaction(p_object,array,fit = True):
     '''
     function to linearly scale values of balow lower and above upper percentile to the average
     scale if inner region

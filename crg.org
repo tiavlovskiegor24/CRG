@@ -210,7 +210,7 @@ the linear dependence of targets on features
 ** DONE Add [[http://scikit-learn.org/stable/modules/multiclass.html][multiclass estimator]] to ML_estimators
 CLOSED: [2017-04-03 Mon 17:22] SCHEDULED: <2017-03-28 Tue>
 random forest already have multiclass capability
-** TODO Integration site prediction 
+** Integration site prediction 
 DEADLINE: <2017-04-28 Fri>
 *** DONE Form full dataset from gmfpt, row_sum and contact decay
 CLOSED: [2017-04-26 Wed 18:37] SCHEDULED: <2017-04-04 Tue>
@@ -227,8 +227,20 @@ we need to bypass the sparsity of our dataset
 SCHEDULED: <2017-04-27 Thu>
 **** TODO reproduce eduards histgrams of ab_score
 SCHEDULED: <2017-04-27 Thu>
-*** TODO train models only on bins with positive bins             :results:
-SCHEDULED: <2017-04-27 Thu>
+*** DONE train models only on bins with non-zero counts           :results:
+CLOSED: [2017-06-20 Tue 15:14] SCHEDULED: <2017-04-27 Thu>
+*** DONE Run ML on large dataset with chip features + HiC features
+CLOSED: [2017-06-20 Tue 15:16]
+with chip features only R^2 test score achieved: 0.47(Ridge),0.52(RF)
+with chip + hi-c features:                       0.53(Ridge),0.62(RF)
+  [2017-06-20 Tue]
+*** DONE Run ML on bushman dataset with chip features + HIC features
+CLOSED: [2017-06-20 Tue 16:04]
+with chip only: 0.44(Ridge,Lasso),0.43(RF)
+with chip+HiC:  0.44(Ridge,Lasso),0.49(RF)
+
+
+
 * Task log 
 
 ** DONE Check CRG email
@@ -286,4 +298,3 @@ CLOSED: [2017-04-03 Mon 14:37] DEADLINE: <2017-03-30 Thu 13:00> SCHEDULED: <2017
 *** DONE check decay constant writting to file
 *** DONE compute gmfpt 
 * Tasks
-

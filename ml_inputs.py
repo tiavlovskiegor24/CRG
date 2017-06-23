@@ -209,15 +209,17 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
         if f_type in cf.feature_types_to_exclude_list:
             continue
         idx = ML_inputs["feature_types"][f_type]
-        p_fun = f_types.feature_types[f_type]["preprocess"]
+        
+        p_fun = f_types.feature_types[f_type].get("preprocess")
+            
         if p_fun is not None:
             if verbose:
                 print "\n\tPreprocessing '{}' features".format(f_type)
 
             if f_type in cf.prepros_params:
-                p_fun = p_fun(ml_method = cf.ML_estimator,**cf.prepros_params[f_type])
+                p_fun = p_fun(**cf.prepros_params[f_type])
             else:
-                p_fun = p_fun(ml_method = cf.ML_estimator)
+                p_fun = p_fun()
 
             df.iloc[:,idx] = p_fun.fit_transform(df.iloc[:,idx].values)
             df_test.iloc[:,idx] = p_fun.transform(df_test.iloc[:,idx].values)
