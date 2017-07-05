@@ -20,9 +20,9 @@ class Feature_Type(object):
         self.ml_method = None # this is irrelevant attribute necessary for old preprocessing
         self.feature_type = feature_type
         self.skip = skip
-        self.handle_nans = handle_nans
+        self.handle_nans = float(handle_nans) if isinstance(handle_nans,(int,long,float)) else None
         self.log_values = log_values
-        self.shrink_tails = shrink_tails
+        self.shrink_tails = shrink_tails if isinstance(shrink_tails,(tuple,list)) else None
         self.rescale_values = rescale_values
 
         # this the default order in which preprocessing
@@ -38,12 +38,12 @@ class Feature_Type(object):
 
     def handle_nans_fun(self,array,mode = "fit_transform",**kwargs):
 
-        if self.handle_nans not in [None,False]:
+        if self.handle_nans is not None:
             sub_value = self.handle_nans
+
             if mode == "fit_transform":
                 print "\tSubstituting Nan values with '{}'".format(sub_value)
-            array = np.where(nan_indices,sub_value,array)
-            
+            array = np.where(np.isnan(array),sub_value,array)
             
         return array
                 
@@ -60,7 +60,7 @@ class Feature_Type(object):
 
     def shrink_tails_fun(self,array,mode = "fit_transform",**kwargs):
 
-        if self.shrink_tails not in [None,False]:
+        if self.shrink_tails is not None:
             if mode == "fit_transform":
                 self.lower_percentile,self.upper_percentile = self.shrink_tails
                 print "\tShrinking top {}% and bottom {}% of samples"\
@@ -107,6 +107,10 @@ class Feature_Type(object):
             array = process_fun(array,mode = "transform")
 
         return array
+
+
+
+
 
 
 class distance_preprocessing(Feature_Type):
@@ -674,6 +678,52 @@ chip_z25 = {
 
 
 
+class GC_Content(Feature_Type):
+
+    def __init__(self,**kwargs):
+
+        super(GC_Content,self).__init__(feature_type = "gc_content",
+                                      rescale_values = True,
+                                      **kwargs)
+
+
+gc_content = {
+
+    "id_fun":(lambda x: True if (x.find("gc_content") > -1) else False),
+
+    "preprocess" : GC_Content,
+    
+    "file_format" : "this features are stored in txt file", 
+       
+    "about" : "gc content for each bin", 
+        
+}
+
+class Lamin(Feature_Type):
+
+    def __init__(self,**kwargs):
+
+        super(Lamin,self).__init__(feature_type = "lamin",
+                                   handle_nans = 0.,
+                                   rescale_values = True,
+                                   **kwargs)
+
+
+lamin = {
+
+    "id_fun":(lambda x: True if (x.find("lamin") > -1) else False),
+
+    "preprocess" : Lamin,
+    
+    "file_format" : "this features are stored in txt file", 
+       
+    "about" : "Lamin of the genome", 
+        
+}
+
+
+
+
     
 
 ### 3. Add the feature type entry to the dictionary below with the following default format ###
@@ -764,6 +814,10 @@ feature_types = {
 
     #ab_score
     "ab_score" : ab_score,
+
+    "gc_content":gc_content,
+
+    "lamin":lamin,
     
     
 }

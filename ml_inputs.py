@@ -72,6 +72,7 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
                      feature_types = None,
                      mask = None,
                      preprocessing = None,
+                     stored_features = None,
     )
     
     if dataset is None:
@@ -289,7 +290,16 @@ def get_ML_inputs(cf = None,f_types = None,t_types = None,dataset = None,verbose
             else:
                 continue
     del group_sort,test_group_sort
-    
+
+    #storing separate features
+    step_tracker += 1
+    if hasattr(cf,"features_to_store_list"):
+        if verbose:
+            print "\n\n{}. Storing separate features: {}".format(step_tracker,list(cf.features_to_store_list))
+        ML_inputs["stored_features"] = {}
+        for feature in cf.features_to_store_list:
+            ML_inputs["stored_features"][feature] = \
+            {"train":df[feature].values,"test":df_test[feature].values}
 
     #Converting dataset to numpy matrix
     step_tracker += 1

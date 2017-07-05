@@ -33,7 +33,7 @@ def grid_search(clf,X,y,param_grid,**kwargs):
     return clf
 
 
-def fit(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None,fit_params = None,**kwargs):
+def fit(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None,fit_params = None,class_weight = None,**kwargs):
 
     if estimator_name is None:
         from control_file import ML_estimator as estimator_name
@@ -53,7 +53,7 @@ def fit(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None,fi
             "Data is not scaled to 0-1 range"
 
     scaler = StandardScaler()
-    X = scaler.fit_transform(X)
+    #X = scaler.fit_transform(X)
     #X = X-0.5
     #print X
     #print np.dot(X.T,X).diagonal()
@@ -64,7 +64,11 @@ def fit(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None,fi
 
         print "\n\tRunning ML with '{}' ...".format(estimator_name)
 
-        clf = estimator(**kwargs)
+        if estimator_name[-2:] == "_C" or estimator_name[-3:] == "_MC":
+            clf = estimator(class_weight = class_weight,**kwargs)
+        else:
+            clf = estimator(**kwargs)
+            
 
         #temporary giving weights to sampels
         if hasattr(cf,"sample_weights"):
@@ -90,7 +94,7 @@ def fit(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None,fi
             ax[0].hlines(y.mean(),0,1)
         
         X,y = ML_inputs.get_data("test")
-        X = clf.scaler.transform(X)
+        #X = clf.scaler.transform(X)
         #X = X-0.5
         #print np.dot(X.T,X).diagonal()
         
@@ -136,10 +140,10 @@ def fit(cf,ML_inputs,estimator_name = None,param_grid = None,by_groups = None,fi
         return group_clfs
 
 def predict(clf,X,select = "all",):
-    X = clf.scaler.transform(X)
+    #X = clf.scaler.transform(X)
     return clf.best_estimator_.predict(X)
     
-def evaluate(clf,ML_inputs,select = "all",estimator_name = None):
+def evaluate(clf,ML_inputs,X,y,select = "all",estimator_name = None):
 
     X,y = ML_inputs.get_data(select)
     

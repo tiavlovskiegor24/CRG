@@ -24,6 +24,10 @@ features_to_exclude_list = {
     #"gmfpt",
 }
 
+features_to_store_list = {
+    "bin",
+}
+
 
 ### Specify sample groups to index by ###
 

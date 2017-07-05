@@ -21,7 +21,7 @@ class in_dataset(object):
         
     def fit_transform(self,dataset):
         # takes the column from dataset
-        print "\n\tTaking '{}' column as targets".format(self.column_name)
+        print "\n\tTaking '{vcx}' column as targets".format(self.column_name)
         array = dataset[self.column_name].values.ravel()
 
         #Handling Nans
@@ -33,10 +33,12 @@ class in_dataset(object):
         array = (array.astype(int) / 32).astype(float)
         array[array == 0] = np.nan
         '''
+
+        
         #print np.nansum(array)
         if self.log_values:
             print "\n\tTaking the log of targets"
-            array = np.log(array)
+            array = np.log1p(array)
 
         self.max_value = np.nanmax(array,axis = 0,keepdims = True)
         self.min_value = np.nanmin(array,axis = 0,keepdims = True)
@@ -223,7 +225,35 @@ class exp_ratio_bin(object):
 
         return array
 
+
+class expr_score_bin(object):
+    def __init__(self,threshold = 0.1):
+        self.threshold = threshold
     
+    def fit_transform(self,dataset):
+
+        import numpy as np
+        # currently target values are assumed
+        expr_score = dataset["exprscore"].values
+
+        print "\tTransforming the problem into binary classification"
+        print "\tSetting targets with expression score >= {} to 1, else 0".format(self.threshold)
+        array = np.where(expr_score >= self.threshold,1.,0.).astype(np.float)
+
+        print "\tBinary label split: %.2f (proportion of ones)"%(array.sum()/array.shape[0])
+
+        return array
+
+    def transform(self,dataset):
+        import numpy as np
+
+        #computing the expression ration
+        expr_score = dataset["exprscore"].values
+
+        array = np.where(expr_score >= self.threshold,1.,0.).astype(np.float)
+
+        return array
+
 
 class test_targets(object):
     def __init__(self,features_mask,noise=(),fields={},**kwargs):
@@ -294,7 +324,7 @@ class test_randomised_targets(object):
 
     def transform(self,dataset):
 
-        array = self.source_target_type.fit_transform(dataset)
+        array = self.source_target_type.transform(dataset)
         shuffled_array = np.random.permutation(array)
         assert np.equal(np.sort(array),np.sort(shuffled_array)).all(),"shuffled targets are not identical"
         return shuffled_array
@@ -306,6 +336,7 @@ target_types = {
     "exp_ratio_cont":exp_ratio_cont,
     "in_dataset":in_dataset,
     "exp_ratio_bin":exp_ratio_bin,
+    "expr_score_bin":expr_score_bin,
     "test_targets":test_targets,
     "test_randomised_targets":test_randomised_targets,
     "exp_ratio_multiclass":exp_ratio_multiclass,

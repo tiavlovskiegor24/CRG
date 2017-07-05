@@ -14,11 +14,11 @@ ML_estimator = "Log_C"
 ### Specify feature types to exclude from ML training ###
 feature_types_to_exclude_list = {
     "chip_c_hb",
-    #"chip_c_hb_r" : None,
+    "chip_c_hb_r",
     "chip_c_zb",
-    #"chip_c_zb_r" : None,
+    "chip_c_zb_r",
     "categorical",
-    #"distance":None,
+    "distance",
     
 }
 
@@ -37,6 +37,7 @@ features_to_exclude_list = {
     "DNA",
     "strand_oh__+",
     "cat_oh__SG",
+    'exprscore', 'reads', 'dna', 'rna', 'locus',
 
     # possible features remaining from older versions of datasets 
     "pos_expr",
@@ -49,7 +50,7 @@ features_to_exclude_list = {
 
 ### set of categorical features to encode using one-hot encoding
 one_hot_features = {
-    "cat",
+    #"cat",
     "strand",
 }
 
@@ -79,7 +80,26 @@ prepros_params = {
 }
 
 ### Indicate target type and pointer to its selection and preprocessing object with any params ###
+
+target_type = {
+    "name":"expr_score_bin",
+    "params":{"threshold":0.1},
+}
+
+
+
 '''
+target_type = {
+    "name":"in_dataset",
+    "params":{
+        "column_name":"exprscore",
+        "tail_compaction":None,
+        "scale":False,
+        "nan_values":None,
+        "log_values":False,
+    },
+}
+
 target_type = {
     "name":"test_targets",
     "params":{
@@ -91,12 +111,12 @@ target_type = {
     "name":"exp_ratio_bin",
     "params":{"threshold":3},
 }
-'''
+
 target_type = {
     "name":"exp_ratio_cont",
     "params":{},
 }
-'''
+
 target_type = {
     "name":"test_targets",
     "params":{},
